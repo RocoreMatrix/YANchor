@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "Please cite YANchor-4B using the metadata below."
+title: "YANchor-4B: Effective Long-Horizon Reasoning in O(N) Time with O(1) Memory"
+authors:
+  - family-names: Ji
+    given-names: Huishan
+  - family-names: Xu
+    given-names: Hua
+  - family-names: Zhang
+    given-names: Weiming
+  - family-names: Ye
+    given-names: Qirui
+repository-code: "https://github.com/RocoreMatrix/YANchor"

@@ -1,0 +1,59 @@
+{
+  "revision": "visual-reference-errata-v1-20260913",
+  "by_id": {
+    "ai2d:82f7f3b5650fc22519dc:29": {
+      "exclude": true,
+      "reason": "题干只有 If grasses，后半句误入选项 A。已有生成使用了损坏题面，不重写其输入后追认得分。"
+    },
+    "chartqa:8aae676afa5e93a6e3cc:15": {
+      "answer_aliases": ["151k"],
+      "reason": "原图两根最大柱标签 213k 与 62k，差为 151k；参考省略图中 k 后缀。"
+    },
+    "chartqa:a371a341825582bde03f:16": {
+      "answer_aliases": ["1.931"],
+      "reason": "原图 France 标签 1.93 t，原始参考 1931 使用另一质量单位；按图中 t 允许 1.931，容差仍为 5%。"
+    },
+    "chartqa:4dd589d1a4cb490aca18:40": {
+      "answer_aliases": ["96000000"],
+      "reason": "问题问 dollars，纵轴为 million U.S. dollars，图中 96 等于 96000000 美元。"
+    },
+    "chartqa:586541b5c6dfbe7d911a:20": {
+      "answer_aliases": ["3979000"],
+      "reason": "问题问人数，纵轴单位为 thousands，图中 3979 等于 3979000 人。"
+    },
+    "chartqa:17bd56fb0aef21206bbb:6": {
+      "answer_aliases": ["Bridgestone"],
+      "reason": "题目要求公司名；Bridgestone 与图例 Bridgestone (Japan) 指向同一公司。"
+    },
+    "chartqa:8d6fbb946440273f67a6:59": {
+      "answer_aliases": ["Total Millennials"],
+      "reason": "Total Millennials 唯一指向图例 Total Millennials (ages 18-33)。"
+    },
+    "ocrbench:2b8bf012ec76c1e645fc:25": {
+      "answer": ["UNIHAKKA INTERNATIONAL SDN BHD"],
+      "reason": "原图公司名为 INTERNATIONAL，原始参考 INTERANTIONAL 拼写错误。"
+    }
+  },
+  "by_family": {
+    "mmbench_cn:4258": {
+      "choice_texts": ["西北"],
+      "reason": "原图澳大利亚位于新西兰西北；按选项内容修正全部循环视图，不固定选项键。"
+    },
+    "mmbench_cn:1097": {
+      "choice_texts": ["东南"],
+      "reason": "原图马达加斯加位于赞比亚东南，原始参考方向相反。"
+    },
+    "mmbench_en:1852": {
+      "choice_texts": ["north"],
+      "reason": "原图罗马尼亚位于地中海北侧，原始参考 west 不符。"
+    },
+    "mmbench_en:1670": {
+      "choice_alias_replacements": [["No match!!", "No match"]],
+      "reason": "给定 Cats are smarter than dogs 匹配成功，两段代码仅未执行的 else 文本不同，输出相同。"
+    },
+    "mmbench_en:1664": {
+      "choice_alias_replacements": [["1997", "1990"]],
+      "reason": "两段代码只读取 tup1[0] 与 tup2[1:5]；未使用的年份元素不同不影响输出。"
+    }
+  }
+}

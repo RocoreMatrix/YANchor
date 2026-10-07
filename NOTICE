@@ -1,0 +1,62 @@
+YANchor-4B
+Copyright 2026 the YANchor contributors.
+YANchor model licensor: Rocore Matrix (岩芯矩阵).
+
+Based on Qwen3.5-4B, Copyright 2026 Alibaba Cloud, Apache License 2.0.
+https://huggingface.co/Qwen/Qwen3.5-4B
+
+The YANchor text model modifies the Qwen3.5-4B attention and memory
+architecture and includes further-trained model weights.
+
+Licensing scope for this GitHub package and its companion model:
+- MODEL_LICENSE: YANchor Model License 1.0 for covered YANchor text-model weights
+  and covered weight-derived variants.
+- LICENSE: Apache License 2.0 for YANchor inference and evaluation code.
+- Original Qwen visual-frontend weights, tokenizer and processor assets,
+  and unmodified upstream configuration material retain Apache License 2.0.
+- Independently licensed software, dependencies and evaluation material
+  retain their own terms.
+
+The model restriction is stated in MODEL_LICENSE, not created by this NOTICE.
+Upstream rights and rights already validly granted remain unchanged.
+
+The included Transformers wheel is built from the unmodified public commit
+f53ca05d02d24372c3de27e2c59d5cf857050efb, under Apache License 2.0.
+https://github.com/huggingface/transformers/commit/f53ca05d02d24372c3de27e2c59d5cf857050efb
+Its original license and notices are included in the wheel.
+
+Required third-party metric implementations retain their own licenses.
+Benchmark questions, images, references and executable tests remain subject
+to their original authors' and distributors' terms; they are not relicensed
+under either the model license or the code license.
+
+The DROP metric is adapted from AllenAI allennlp-models (Apache-2.0):
+https://github.com/allenai/allennlp-models/tree/b1f372248c17ad12684d344955fbcd98e957e77e
+Official BBEH, IFEval and IFBench code retains its Apache-2.0 notices.
+LiveCodeBench retains its MIT license beside the execution backend.
+
+Required NLTK English tokenization and tagging resources are included for the
+instruction-following metrics. Punkt contributors: Jan Strunk and Tibor Kiss;
+see Kiss and Strunk (2006), Computational Linguistics 32, 485-525. The English
+stop-word list comes from Snowball/PostgreSQL with NLTK corrections. Resource
+attribution: https://github.com/nltk/nltk_data
+
+NLTK averaged_perceptron_tagger_eng (MIT):
+https://github.com/sloria/textblob-aptagger
+Copyright 2013 Matthew Honnibal
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
