@@ -4,7 +4,7 @@
 
 Rocore Matrix · October 2026
 
-[Demo, deployment and evaluation](USAGE.md)
+[Technical Report · arXiv:2610.10118](https://arxiv.org/abs/2610.10118) · [GitHub](https://github.com/RocoreMatrix/YANchor) · [Hugging Face](https://huggingface.co/HuishanJi/YANchor-4B) · [ModelScope](https://modelscope.ai/models/RocoreMatrix/YANchor-4B)
 
 YANchor-4B is a general-purpose recurrent model that preserves crucial memory as ANchors for retrieval during subsequent reasoning. Its multidimensional memory mechanism enables effective long-horizon reasoning with O(N) generation time and O(1) history-state memory.
 
@@ -197,6 +197,69 @@ VL scores are answer-level accuracy in percent.
 
 YANchor's text evaluation uses temperature 0.6, top-p 0.95, top-k 20, and a 131,072-token response budget. Completions beyond this budget receive zero outcome credit. VL evaluation uses one response per input with thinking enabled, temperature 1.0, top-p 0.95, top-k 20, presence penalty 1.5, and a 32,768-token response cap.
 
+## Quickstart
+
+### Environment
+
+The released runtime is validated on **NVIDIA H100 80 GB with Linux**. Use Docker with NVIDIA Container Toolkit and the supplied `Dockerfile`, based on `nvcr.io/nvidia/pytorch:26.03-py3`. The image supplies PyTorch, CUDA and FlashAttention; the remaining dependencies, including the pinned public Transformers wheel, are included or specified in the bundle.
+
+YANchor-4B uses the custom inference runtime provided through **`run.py`**. Use this entrypoint to load the model and its memory modules.
+
+### Download and run
+
+Download the complete [Hugging Face bundle](https://huggingface.co/HuishanJi/YANchor-4B), which includes the model weights, runtime and evaluation data. The bundle is also available on [ModelScope](https://modelscope.ai/models/RocoreMatrix/YANchor-4B).
+
+```bash
+python -m pip install -U huggingface_hub
+hf download HuishanJi/YANchor-4B --local-dir YANchor-4B
+cd YANchor-4B
+docker build -t yanchor-runtime .
+docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
+  yanchor-runtime demo --prompt 'Compute 17 × 23.'
+```
+
+Run the commands below from the downloaded bundle root. First startup includes weight loading and CUDA compilation. See [the usage guide](USAGE.md) for dependency installation and additional examples.
+
+## Deployment
+
+Start a local B1 HTTP service with the fastest released inference profile:
+
+```bash
+docker run --rm --gpus all --ipc=host --network host -v "$PWD:/model" \
+  yanchor-runtime serve --batch 1 --profile fast --port 8000
+```
+
+The service prewarms its short-input decode path before reporting READY. Batch generation uses the same runtime:
+
+```bash
+docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
+  yanchor-runtime generate --batch 320 --profile fast \
+  --input prompts.jsonl --output outputs/generated
+```
+
+`prompts.jsonl` contains one `{"prompt":"..."}` object per line. Supported per-GPU batch capacities are **1, 32, 64, 128, 256, 320 and 512**. The `fast` profile uses INT8 MLP GEMV with FP32 GDN state for B1, and BF16 MLPs with FP16 GDN state for B32–B512. `--profile reference` selects the reference arithmetic. Weights on disk remain BF16. Model loading, prefill and pure decode timings are reported separately.
+
+See [deployment and benchmarking](USAGE.md#demo-and-batch-inference) for request formats, all batch configurations and fixed-work throughput measurements.
+
+## Reproducing the evaluations
+
+The complete model bundle includes the frozen evaluation inputs and scoring code. The following command runs the full bundled text panel on one H100; expand `--gpus` to a comma-separated list to use more GPUs:
+
+```bash
+docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
+  yanchor-runtime evaluate --suite text --gpus 0 --batch 320 --output outputs/text
+```
+
+Automatic K uses each bundled source's question count: **K=64** below 100 questions, **K=16** for 100–10,000, and **K=1** above 10,000. The defaults apply the text generation settings above and the **v41** scoring rules. Source scores use all question × K attempts and retain benchmark-specific aggregation.
+
+Monitor progress and aggregate decode throughput from another terminal:
+
+```bash
+docker run --rm -v "$PWD:/model" yanchor-runtime status --output outputs/text
+```
+
+See [evaluation instructions](USAGE.md#evaluation) for text, vision and the four reported memory tasks, source selection, scoring rules and result files. Reduced question counts, K or token budgets are suitable for installation checks; use the full protocol to reproduce the reported results.
+
 ## License
 
 YANchor-4B weights use [YANchor Model License 1.0](MODEL_LICENSE), a custom license incorporating Apache License 2.0 terms. The sole additional restriction is physically hardwiring covered weights into a chip's non-reprogrammable structure, including commissioning such fabrication, without written authorization. Research, training, fine-tuning, distillation, quantization, deployment, redistribution and commercial use are permitted without fees or scale thresholds. Ordinary device deployment, model-data storage and hardware design remain permitted; read-only storage alone does not trigger the restriction. Code uses [Apache-2.0](LICENSE). Upstream and third-party materials retain their original licenses; see [NOTICE](NOTICE).
@@ -208,11 +271,14 @@ YANchor-4B weights use [YANchor Model License 1.0](MODEL_LICENSE), a custom lice
   title  = {{YANchor-4B}: Effective Long-Horizon Reasoning in {O(N)} Time with {O(1)} Memory},
   author = {Ji, Huishan and Xu, Hua and Zhang, Weiming and Ye, Qirui},
   year   = {2026},
-  url    = {https://github.com/RocoreMatrix/YANchor}
+  eprint = {2610.10118},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  url    = {https://arxiv.org/abs/2610.10118}
 }
 ```
 
-Citation metadata is available in [CITATION.cff](CITATION.cff).
+Please cite the [technical report, arXiv:2610.10118](https://arxiv.org/abs/2610.10118). Machine-readable metadata is available in [CITATION.cff](CITATION.cff).
 
 ### Contacts
 
