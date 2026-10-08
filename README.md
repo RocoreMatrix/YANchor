@@ -1,10 +1,17 @@
-# YANchor-4B
-
-## Effective Long-Horizon Reasoning in O(N) Time with O(1) Memory
-
-Rocore Matrix · October 2026
-
-[Technical Report · arXiv:2610.10118](https://arxiv.org/abs/2610.10118) · [GitHub](https://github.com/RocoreMatrix/YANchor) · [Hugging Face](https://huggingface.co/HuishanJi/YANchor-4B) · [ModelScope](https://modelscope.ai/models/RocoreMatrix/YANchor-4B)
+<div align="center">
+  <h1>YANchor-4B</h1>
+  <h3>Effective Long-Horizon Reasoning<br>in O(N) Time with O(1) Memory</h3>
+  <p>Rocore Matrix · October 2026 · arXiv:2610.10118</p>
+  <p>
+    📄 <a href="https://arxiv.org/abs/2610.10118"><b>Technical Report</b></a>
+    &nbsp; | &nbsp;
+    💻 <a href="https://github.com/RocoreMatrix/YANchor">GitHub</a>
+    &nbsp; | &nbsp;
+    🤗 <a href="https://huggingface.co/HuishanJi/YANchor-4B">Hugging Face</a>
+    &nbsp; | &nbsp;
+    🤖 <a href="https://modelscope.ai/models/RocoreMatrix/YANchor-4B">ModelScope</a>
+  </p>
+</div>
 
 YANchor-4B is a general-purpose recurrent model that preserves crucial memory as ANchors for retrieval during subsequent reasoning. Its multidimensional memory mechanism enables effective long-horizon reasoning with O(N) generation time and O(1) history-state memory.
 
