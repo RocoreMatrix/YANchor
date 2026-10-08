@@ -78,7 +78,7 @@ The benchmark warms up first, disables EOS and mechanical-loop stopping for fixe
 
 ## Evaluation
 
-By default, evaluation processes every question supplied for each source, with no additional per-source question limit. Run the released evaluation protocol with:
+By default, evaluation processes every question supplied for each source, with no additional per-source question limit. Run the complete designated evaluation splits with:
 
 ```bash
 python -I run.py evaluate --model /weights --suite text --gpus 0,1,2,3,4,5,6,7 --batch 320 --output outputs/text
@@ -89,7 +89,9 @@ python -I run.py status --output outputs/text
 
 Use a fresh output directory for each evaluation. The CPU broker distributes attempts among GPU replicas; completed slots are refilled while other answers continue. Workers write response fragments, exit, and then CPU scoring starts. `--generate-only` stops after generation. Existing fragments can be scored with `python -I run.py score --model /weights --output outputs/text`, without GPUs.
 
-`/weights/data/MANIFEST.json` lists the supplied source sizes. The text panel contains 38,409 frozen evaluation questions across 29 sources and expands to 623,328 responses. The published results use these supplied evaluation sets; some sources are subsets of the original benchmarks. Their question counts are recorded in the manifest. The report presents 27 sources; the two HMMT 2025 panels remain available as additional evaluations. Auto-K uses the complete bundled source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
+`/weights/data/MANIFEST.json` lists the designated evaluation splits and their complete question counts. The text evaluation contains **113,743 questions across 29 sources** and expands to **715,267 responses** under automatic K. The report presents 27 sources; the two HMMT 2025 sources remain available as additional evaluations. Auto-K uses the complete source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
+
+This data release expands the evaluation coverage. The scores in the model card and technical report retain their original evaluation scope and have not been recomputed on this expanded release.
 
 Text generation uses temperature 0.6, top-k 20, top-p 0.95, no presence penalty, seed 20260923 and a 131,072-token output cap. The frozen `prompt_text` is the model input; references and executable tests are consumed only by CPU scorers. Every sampled trajectory contributes to the accuracy denominator. The published 128K cutoff gives no credit to trajectories longer than 131,072 tokens. Fixed seeds and large K support statistical reproduction; arithmetic order and batch shapes can change individual trajectories.
 

@@ -33,6 +33,8 @@ Throughput uses repeated prompts and 32K outputs. Solid memory curves use measur
 
 Evaluation covers 27 text benchmarks and six VL benchmarks. YANchor reports mean pass@1 for correctness-based tasks; Evaluation Settings defines the metrics. Bold marks row-best scores, including ties.
 
+The tables below reproduce the technical report’s measurements. The current downloadable evaluation data covers complete designated splits; results on this expanded data release have not yet been measured.
+
 ### Linear-time, constant-state models
 
 YANchor leads all 16 evaluated linear-time, constant-state baselines on 20 of the 24 common benchmarks. Its 24-benchmark mean is **78.64**, exceeding the strongest baseline, RWKV-7 G1j 13.3B at 56.29, by **22.35 points**. On AIME and HMMT, YANchor scores 82.93 and 63.64, compared with 18.89 and 12.12 for that 13.3B model. The lead spans 7B–14B counterparts and extends to knowledge, code, and instruction following.
@@ -248,9 +250,9 @@ docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
 
 See [deployment and benchmarking](USAGE.md#demo-and-batch-inference) for request formats, all batch configurations and fixed-work throughput measurements.
 
-## Reproducing the evaluations
+## Running the evaluations
 
-The complete model bundle includes the frozen evaluation inputs and scoring code. By default, the evaluator runs every question supplied for each text source, with no additional per-source question limit. The following command uses one H100; expand `--gpus` to a comma-separated list to use more GPUs:
+The complete model bundle includes all **113,743 questions across the designated evaluation splits of 29 text benchmarks**, together with the scoring code. By default, the evaluator runs every question in each source, with no per-source question limit. The following command uses one H100; expand `--gpus` to a comma-separated list to use more GPUs:
 
 ```bash
 docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
@@ -265,7 +267,7 @@ Monitor progress and aggregate decode throughput from another terminal:
 docker run --rm -v "$PWD:/model" yanchor-runtime status --output outputs/text
 ```
 
-See [evaluation instructions](USAGE.md#evaluation) for text, vision and the four reported memory tasks, source selection, scoring rules and result files. Use the documented evaluation sets, K and token budgets to reproduce the reported results.
+See [evaluation instructions](USAGE.md#evaluation) for text, vision and the four reported memory tasks, source selection, scoring rules and result files. The current full-split release expands the evaluation data. The benchmark tables retain the technical report’s original measurements; they have not been recomputed on this expanded release.
 
 ## License
 
