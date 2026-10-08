@@ -141,7 +141,7 @@ Disabling memory reduces query accuracy to 0.4%. Paired evidence-change tests fu
 
 These models provide cross-architecture references with context-dependent history storage. Qwen3.5-4B combines Gated DeltaNet with global attention and serves as the backbone reference for YANchor’s conversion to bounded-state inference.
 
-YANchor surpasses MiniCPM4.1-8B, Gemma4-E4B, Phi-4-mini-reasoning, and Nemotron-3-Nano-4B on all three AIME editions while using constant history-state memory. Compared with Qwen3.5-4B, YANchor scores higher on MMLU, MMLU-Pro, MMLU-Redux, SuperGPQA, HumanEval, MBPP, IFBench, and DROP. Across the 27 common benchmarks, YANchor and Qwen score 77.7 and 79.7, respectively. YANchor retains 96.4% of Qwen’s three-year AIME mean and delivers 4.12–6.58 times its measured end-to-end throughput in batched long generation.
+YANchor surpasses MiniCPM4.1-8B, Gemma4-E4B, Phi-4-mini-reasoning, and Nemotron-3-Nano-4B on all three AIME editions while using constant history-state memory. Compared with Qwen3.5-4B, YANchor scores higher on MMLU, MMLU-Pro, MMLU-Redux, SuperGPQA, HumanEval, MBPP, IFBench, and DROP. YANchor retains 96.4% of Qwen’s three-year AIME mean and delivers 4.12–6.58 times its measured end-to-end throughput in batched long generation.
 
 | Benchmark | YANchor-4B | Qwen3.5-4B Backbone [[1]](#ref-1) | Granite4.2 3B [[41]](#ref-41) | Phi-4-mini-reasoning [[42]](#ref-42) | Gemma4 E4B-it [[40]](#ref-40) | Nemotron-3 Nano-4B [[43]](#ref-43) | MiniCPM4.1 8B [[39]](#ref-39) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -178,7 +178,6 @@ YANchor surpasses MiniCPM4.1-8B, Gemma4-E4B, Phi-4-mini-reasoning, and Nemotron-
 | **Instruction following** |  |  |  |  |  |  |  |
 | IFEval [[29]](#ref-29) | 87.9 | 90.0 | **92.3** | 46.0 | 84.2 | 89.3 | 73.6 |
 | IFBench [[30]](#ref-30) | 65.2 | 60.2 | **74.4** | 14.5 | 34.7 | 57.7 | 23.6 |
-| **27-benchmark mean** | 77.7 | **79.7** | 75.2 | 56.3 | 64.9 | 65.3 | 71.5 |
 
 ## VL comparison
 
