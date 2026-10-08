@@ -15,7 +15,7 @@
 
 YANchor-4B is a general-purpose recurrent model that preserves crucial memory as ANchors for retrieval during subsequent reasoning. Its multidimensional memory mechanism enables effective long-horizon reasoning with O(N) generation time and O(1) history-state memory.
 
-For example, on challenging math problems, YANchor achieves 82.93% mean pass@1 on AIME 2024–2026 and 63.64% on HMMT, substantially outperforming linear-time, constant-state counterparts, including 7B–14B models.
+For example, on challenging math problems, YANchor achieves 82.9% mean pass@1 on AIME 2024–2026 and 63.8% on HMMT, substantially outperforming linear-time, constant-state counterparts, including 7B–14B models.
 
 YANchor delivers several-fold higher batched long-generation throughput than Transformer and hybrid baselines on H100. Evaluations across dozens of benchmarks demonstrate its superiority in general-purpose capabilities.
 
@@ -31,49 +31,48 @@ Throughput uses repeated prompts and 32K outputs. Solid memory curves use measur
 
 ## Evaluation
 
-Evaluation covers 27 text benchmarks and six VL benchmarks. YANchor reports mean pass@1 for correctness-based tasks; Evaluation Settings defines the metrics. Bold marks row-best scores, including ties.
-
-The tables below reproduce the technical report’s measurements. The current downloadable evaluation data covers complete designated splits; results on this expanded data release have not yet been measured.
+Evaluation covers the complete designated splits of 27 common text benchmarks and six VL benchmarks. YANchor reports mean pass@1 for correctness-based tasks; Evaluation Settings defines the metrics. Bold marks row-best scores, including ties.
 
 ### Linear-time, constant-state models
 
-YANchor leads all 16 evaluated linear-time, constant-state baselines on 20 of the 24 common benchmarks. Its 24-benchmark mean is **78.64**, exceeding the strongest baseline, RWKV-7 G1j 13.3B at 56.29, by **22.35 points**. On AIME and HMMT, YANchor scores 82.93 and 63.64, compared with 18.89 and 12.12 for that 13.3B model. The lead spans 7B–14B counterparts and extends to knowledge, code, and instruction following.
+YANchor leads all 16 evaluated linear-time, constant-state baselines on 23 of the 27 common benchmarks. Its 27-benchmark mean is **77.7**, exceeding the strongest baseline, AHN-GDN Qwen2.5 14B at 57.0, by **20.7 points**. On AIME and HMMT, YANchor scores 82.9 and 63.8, compared with 18.8 and 12.2 for RWKV-7 G1j 13.3B. The lead spans 7B–14B counterparts and extends to knowledge, code, and instruction following.
 
 | Benchmark | YANchor-4B | ARWKV-R1 7B [[2]](#ref-2) | Falcon3-Mamba 7B Instruct [[4]](#ref-4) | QRWKV7 7B Instruct [[5]](#ref-5) | xLSTM 7B [[6]](#ref-6) | Recurrent Gemma 9B IT [[8]](#ref-8) | RWKV-7 G1j 13.3B [[7]](#ref-7) | AHN-GDN Qwen2.5 14B [[3]](#ref-3) | Phi-3 Medium 4K Instruct W2047 [[9]](#ref-9) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | **Mathematics** |  |  |  |  |  |  |  |  |  |
-| AIME 2024 [[12]](#ref-12) | **86.72** | 0.00 | 1.67 | 0.00 | 0.00 | 0.42 | 17.50 | 13.75 | 3.33 |
-| AIME 2025 [[12]](#ref-12) | **77.45** | 0.00 | 0.83 | 0.00 | 0.00 | 0.42 | 27.92 | 10.00 | 3.33 |
-| AIME 2026 [[12]](#ref-12) | **84.64** | 0.42 | 0.83 | 0.00 | 0.00 | 0.00 | 11.25 | 10.42 | 0.00 |
-| HMMT Feb 2026 [[13]](#ref-13) | **63.64** | 0.76 | 2.27 | 0.00 | 1.52 | 1.89 | 12.12 | 4.92 | 3.03 |
-| MATH-500 [[11]](#ref-11) | **97.49** | 31.00 | 41.20 | 41.00 | 24.80 | 22.60 | 77.00 | 80.00 | 49.00 |
-| GSM8K [[10]](#ref-10) | **94.45** | 44.50 | 60.60 | 65.00 | 41.60 | 51.80 | 94.30 | 93.10 | 84.60 |
+| AIME 2024 [[12]](#ref-12) | **86.6** | 0.0 | 1.7 | 0.1 | 0.1 | 0.3 | 17.5 | 13.7 | 3.4 |
+| AIME 2025 [[12]](#ref-12) | **77.4** | 0.0 | 0.7 | 0.0 | 0.0 | 0.6 | 27.8 | 10.2 | 3.4 |
+| AIME 2026 [[12]](#ref-12) | **84.7** | 0.4 | 0.8 | 0.0 | 0.1 | 0.1 | 11.1 | 10.3 | 0.0 |
+| HMMT Feb 2026 [[13]](#ref-13) | **63.8** | 0.7 | 2.2 | 0.0 | 1.8 | 1.9 | 12.2 | 4.9 | 3.0 |
+| MATH-500 [[11]](#ref-11) | **97.6** | 30.9 | 41.1 | 40.9 | 24.8 | 22.6 | 77.0 | 79.9 | 48.9 |
+| GSM8K [[10]](#ref-10) | **94.6** | 44.4 | 60.8 | 64.9 | 41.5 | 51.8 | 94.3 | 93.1 | 84.7 |
 | **Knowledge** |  |  |  |  |  |  |  |  |  |
-| MMLU [[14]](#ref-14) | **87.87** | 36.10 | 61.50 | 66.20 | 23.50 | 56.00 | 76.80 | 77.30 | 75.90 |
-| MMLU-Pro [[15]](#ref-15) | **79.60** | 13.30 | 31.70 | 27.60 | 21.00 | 19.90 | 60.60 | 64.70 | 58.80 |
-| MMLU-Redux [[16]](#ref-16) | **92.00** | 36.69 | 64.26 | 35.32 | 38.99 | 54.82 | 79.66 | 83.33 | 81.45 |
-| CMMLU [[17]](#ref-17) | 72.40 | 29.47 | 35.28 | 57.90 | 19.35 | 40.42 | 66.14 | **75.78** | 53.60 |
-| C-Eval [[18]](#ref-18) | 74.47 | 28.60 | 39.00 | 57.20 | 19.20 | 40.70 | 66.60 | **76.40** | 50.90 |
+| MMLU [[14]](#ref-14) | **87.8** | 36.1 | 61.6 | 66.1 | 23.5 | 56.2 | 76.8 | 77.3 | 76.0 |
+| MMLU-Pro [[15]](#ref-15) | **79.6** | 13.4 | 31.7 | 27.6 | 21.1 | 19.8 | 60.4 | 64.7 | 58.9 |
+| MMLU-Redux [[16]](#ref-16) | **92.0** | 36.7 | 64.4 | 35.4 | 38.9 | 54.8 | 79.7 | 83.5 | 81.6 |
+| CMMLU [[17]](#ref-17) | 72.5 | 29.5 | 35.2 | 58.0 | 19.3 | 40.3 | 66.1 | **76.0** | 53.5 |
+| C-Eval [[18]](#ref-18) | 74.5 | 28.6 | 38.8 | 57.2 | 19.1 | 40.8 | 66.6 | **76.3** | 50.8 |
 | **Science** |  |  |  |  |  |  |  |  |  |
-| GPQA-Diamond [[19]](#ref-19) | **64.61** | 13.64 | 24.24 | 10.61 | 12.63 | 25.25 | 42.42 | 40.91 | 29.80 |
-| SuperGPQA [[20]](#ref-20) | **61.69** | 9.90 | 12.30 | 16.90 | 5.90 | 19.30 | 35.50 | 36.30 | 25.30 |
-| ARC-C [[23]](#ref-23) | **95.50** | 50.30 | 76.70 | 86.00 | 27.10 | 73.20 | 91.60 | 90.90 | 90.20 |
-| ARC-E [[23]](#ref-23) | **98.02** | 58.10 | 86.90 | 96.00 | 29.00 | 87.40 | 96.60 | 95.10 | 95.50 |
+| GPQA-Diamond [[19]](#ref-19) | **64.7** | 13.6 | 24.2 | 10.6 | 12.7 | 25.0 | 42.4 | 40.8 | 29.8 |
+| SuperGPQA [[20]](#ref-20) | **61.6** | 9.9 | 12.4 | 16.8 | 6.0 | 19.3 | 35.5 | 36.4 | 25.2 |
+| ARC-C [[23]](#ref-23) | **95.3** | 50.4 | 76.6 | 86.2 | 27.3 | 73.3 | 91.7 | 91.1 | 90.1 |
+| ARC-E [[23]](#ref-23) | **98.1** | 58.0 | 86.9 | 96.1 | 28.8 | 87.4 | 96.6 | 95.3 | 95.5 |
 | **Commonsense and reasoning** |  |  |  |  |  |  |  |  |  |
-| WinoGrande [[21]](#ref-21) | 77.90 | 36.50 | 59.90 | 61.80 | 25.80 | 56.40 | 72.50 | 77.20 | **80.60** |
-| HellaSwag [[22]](#ref-22) | 64.57 | 12.70 | 41.00 | 45.20 | 9.20 | 44.90 | **76.40** | 70.00 | 76.10 |
-| BBH [[24]](#ref-24) | **85.88** | 12.00 | 31.50 | 37.39 | 10.90 | 35.30 | 48.89 | 53.57 | 51.87 |
-| BBEH [[25]](#ref-25) | **29.07** | 2.11 | 3.51 | 1.91 | 3.32 | 2.41 | 7.64 | 4.50 | 2.61 |
-| DROP F1 [[31]](#ref-31) | **77.22** | 10.38 | 19.87 | 21.02 | 30.71 | 38.25 | 54.38 | 65.32 | 50.30 |
-| MuSR [[32]](#ref-32) | **60.42** | 10.96 | 23.34 | 1.84 | 10.92 | 35.04 | 51.35 | 56.13 | 50.55 |
-| LogiQA2 [[33]](#ref-33) | **72.23** | 21.10 | 40.20 | 26.10 | 18.00 | 40.40 | 66.70 | 70.70 | 61.50 |
+| WinoGrande [[21]](#ref-21) | 78.0 | 36.5 | 59.8 | 61.7 | 25.7 | 56.2 | 72.6 | 77.2 | **80.6** |
+| HellaSwag [[22]](#ref-22) | 64.5 | 12.9 | 41.0 | 45.1 | 9.4 | 44.8 | **76.4** | 70.0 | 76.1 |
+| BBH [[24]](#ref-24) | **85.9** | 11.8 | 31.4 | 37.3 | 10.8 | 35.4 | 48.8 | 53.5 | 51.8 |
+| BBEH [[25]](#ref-25) | **29.2** | 2.0 | 3.5 | 1.9 | 3.4 | 2.3 | 7.7 | 4.5 | 2.5 |
+| DROP F1 [[31]](#ref-31) | **77.3** | 10.4 | 19.8 | 21.0 | 30.5 | 38.4 | 54.4 | 65.4 | 50.3 |
+| MuSR [[32]](#ref-32) | **60.4** | 10.9 | 23.3 | 1.8 | 10.9 | 35.0 | 51.5 | 56.2 | 50.6 |
+| LogiQA2 [[33]](#ref-33) | **72.2** | 21.1 | 40.2 | 26.2 | 18.1 | 40.5 | 66.7 | 70.6 | 61.4 |
 | **Code** |  |  |  |  |  |  |  |  |  |
-| HumanEval [[26]](#ref-26) | **96.72** | 16.46 | 34.15 | 61.59 | 36.59 | 37.20 | 85.98 | 75.61 | 73.78 |
-| MBPP [[27]](#ref-27) | **87.81** | 21.20 | 39.20 | 30.20 | 9.20 | 19.00 | 67.40 | 68.60 | 59.40 |
-| LiveCodeBench v6 [[28]](#ref-28) | **61.63** | 2.60 | 9.50 | 12.70 | 2.30 | 8.20 | 31.00 | 33.30 | 19.60 |
+| HumanEval [[26]](#ref-26) | **96.9** | 16.4 | 34.0 | 61.5 | 36.4 | 37.0 | 86.1 | 75.5 | 73.9 |
+| MBPP [[27]](#ref-27) | **87.8** | 21.4 | 39.2 | 30.1 | 9.3 | 19.1 | 67.4 | 68.8 | 59.4 |
+| LiveCodeBench v6 [[28]](#ref-28) | **61.6** | 2.7 | 9.4 | 12.6 | 2.2 | 8.2 | 31.0 | 33.3 | 19.7 |
 | **Instruction following** |  |  |  |  |  |  |  |  |  |
-| IFEval [[29]](#ref-29) | **88.03** | 10.35 | 64.70 | 58.78 | 35.49 | 39.56 | 77.82 | 77.26 | 61.55 |
-| IFBench [[30]](#ref-30) | **65.29** | 8.33 | 18.67 | 21.33 | 14.67 | 12.67 | 27.33 | 33.33 | 22.00 |
+| IFEval [[29]](#ref-29) | **87.9** | 10.4 | 64.9 | 59.0 | 35.6 | 39.5 | 77.7 | 77.4 | 61.6 |
+| IFBench [[30]](#ref-30) | **65.2** | 8.1 | 18.6 | 21.2 | 14.6 | 12.6 | 27.3 | 33.5 | 21.9 |
+| **27-benchmark mean** | **77.7** | 19.2 | 34.2 | 34.8 | 17.5 | 32.0 | 56.4 | 57.0 | 48.7 |
 
 ## Model
 
@@ -129,56 +128,57 @@ Cache preemption begins at 4K context for Qwen and MiniCPM, and at 8K for Gemma.
 
 ## Long-memory capability
 
-YANchor retrieves and uses distant information with 94.14% query accuracy over 16K–130,000-token contexts. The tasks cover exact retrieval, state updates, cross-document combination, and variable binding.
+YANchor retrieves and uses distant information with 94.1% query accuracy over 16K–130,000-token contexts. The tasks cover exact retrieval, state updates, cross-document combination, and variable binding.
 
 | Memory path | Query accuracy | All four answers correct |
 |---|---:|---:|
-| Enabled | 94.14% | 80.08% |
-| Disabled | 0.39% | 0.00% |
+| Enabled | 94.1% | 80.1% |
+| Disabled | 0.4% | 0.0% |
 
-Disabling memory reduces query accuracy to 0.39%. Paired evidence-change tests further show that YANchor uses distant content to update its answers. The technical report gives the task breakdown and experimental settings.
+Disabling memory reduces query accuracy to 0.4%. Paired evidence-change tests further show that YANchor uses distant content to update its answers. The technical report gives the task breakdown and experimental settings.
 
 ## Transformer and global-attention hybrid references
 
 These models provide cross-architecture references with context-dependent history storage. Qwen3.5-4B combines Gated DeltaNet with global attention and serves as the backbone reference for YANchor’s conversion to bounded-state inference.
 
-YANchor surpasses MiniCPM4.1-8B, Gemma4-E4B, Phi-4-mini-reasoning, and Nemotron-3-Nano-4B on all three AIME editions while using constant history-state memory. Compared with Qwen3.5-4B, YANchor scores higher on MMLU, MMLU-Pro, MMLU-Redux, SuperGPQA, HumanEval, MBPP, and IFBench. Across the 24 common benchmarks, YANchor and Qwen score 78.64 and 80.44, respectively. YANchor retains 96.31% of Qwen’s three-year AIME mean while using 43–47% fewer output tokens, and delivers 4.12–6.58 times its measured end-to-end throughput in batched long generation.
+YANchor surpasses MiniCPM4.1-8B, Gemma4-E4B, Phi-4-mini-reasoning, and Nemotron-3-Nano-4B on all three AIME editions while using constant history-state memory. Compared with Qwen3.5-4B, YANchor scores higher on MMLU, MMLU-Pro, MMLU-Redux, SuperGPQA, HumanEval, MBPP, IFBench, and DROP. Across the 27 common benchmarks, YANchor and Qwen score 77.7 and 79.7, respectively. YANchor retains 96.4% of Qwen’s three-year AIME mean and delivers 4.12–6.58 times its measured end-to-end throughput in batched long generation.
 
 | Benchmark | YANchor-4B | Qwen3.5-4B Backbone [[1]](#ref-1) | Granite4.2 3B [[41]](#ref-41) | Phi-4-mini-reasoning [[42]](#ref-42) | Gemma4 E4B-it [[40]](#ref-40) | Nemotron-3 Nano-4B [[43]](#ref-43) | MiniCPM4.1 8B [[39]](#ref-39) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | **Mathematics** |  |  |  |  |  |  |  |
-| AIME 2024 [[12]](#ref-12) | 86.72 | **89.58** | 85.00 | 44.58 | 41.25 | 60.83 | 77.08 |
-| AIME 2025 [[12]](#ref-12) | 77.45 | **80.83** | 78.75 | 30.83 | 39.58 | 56.67 | 70.00 |
-| AIME 2026 [[12]](#ref-12) | 84.64 | **87.92** | 82.92 | 35.00 | 38.33 | 53.75 | 70.83 |
-| HMMT Feb 2026 [[13]](#ref-13) | 63.64 | **65.91** | 58.71 | 26.14 | 28.03 | 36.36 | 50.00 |
-| MATH-500 [[11]](#ref-11) | 97.49 | **98.00** | 97.80 | 91.40 | 87.40 | 94.80 | 96.40 |
-| GSM8K [[10]](#ref-10) | 94.45 | **94.50** | 93.50 | 92.40 | 90.30 | 91.80 | 93.30 |
+| AIME 2024 [[12]](#ref-12) | 86.6 | **89.6** | 84.9 | 44.7 | 41.2 | 60.9 | 77.1 |
+| AIME 2025 [[12]](#ref-12) | 77.4 | **80.8** | 78.7 | 30.8 | 39.6 | 56.6 | 69.9 |
+| AIME 2026 [[12]](#ref-12) | 84.7 | **87.7** | 82.9 | 35.0 | 38.2 | 53.8 | 70.9 |
+| HMMT Feb 2026 [[13]](#ref-13) | 63.8 | **66.0** | 58.7 | 26.1 | 28.0 | 36.4 | 49.9 |
+| MATH-500 [[11]](#ref-11) | 97.6 | **98.0** | 97.8 | 91.3 | 87.5 | 94.8 | 96.5 |
+| GSM8K [[10]](#ref-10) | 94.6 | **94.7** | 93.5 | 92.3 | 90.3 | 91.8 | 93.4 |
 | **Knowledge** |  |  |  |  |  |  |  |
-| MMLU [[14]](#ref-14) | **87.87** | 85.60 | 77.30 | 78.10 | 75.20 | 77.30 | 82.20 |
-| MMLU-Pro [[15]](#ref-15) | **79.60** | 75.90 | 65.80 | 53.20 | 68.60 | 56.40 | 65.90 |
-| MMLU-Redux [[16]](#ref-16) | **92.00** | 89.31 | 80.92 | 79.77 | 85.95 | 80.82 | 86.79 |
-| CMMLU [[17]](#ref-17) | 72.40 | **82.26** | 58.29 | 44.34 | 61.84 | 53.94 | 80.12 |
-| C-Eval [[18]](#ref-18) | 74.47 | **85.10** | 61.80 | 42.70 | 64.90 | 55.70 | 78.80 |
+| MMLU [[14]](#ref-14) | **87.8** | 85.6 | 77.3 | 78.1 | 75.2 | 77.5 | 82.4 |
+| MMLU-Pro [[15]](#ref-15) | **79.6** | 75.9 | 65.8 | 53.2 | 68.5 | 56.5 | 65.6 |
+| MMLU-Redux [[16]](#ref-16) | **92.0** | 89.3 | 80.8 | 79.8 | 85.8 | 80.8 | 86.8 |
+| CMMLU [[17]](#ref-17) | 72.5 | **82.2** | 58.3 | 44.3 | 61.9 | 53.9 | 80.3 |
+| C-Eval [[18]](#ref-18) | 74.5 | **85.2** | 61.7 | 42.7 | 64.8 | 55.5 | 78.8 |
 | **Science** |  |  |  |  |  |  |  |
-| GPQA-Diamond [[19]](#ref-19) | 64.61 | **77.78** | 58.59 | 47.98 | 40.91 | 43.43 | 50.51 |
-| SuperGPQA [[20]](#ref-20) | **61.69** | 51.40 | 39.60 | 34.70 | 42.50 | 37.50 | 41.90 |
-| ARC-C [[23]](#ref-23) | 95.50 | **96.90** | 92.80 | 91.40 | 92.10 | 91.60 | 92.70 |
-| ARC-E [[23]](#ref-23) | 98.02 | **99.00** | 97.30 | 95.70 | 96.60 | 96.10 | 96.50 |
+| GPQA-Diamond [[19]](#ref-19) | 64.7 | **77.8** | 58.7 | 48.1 | 40.9 | 43.4 | 50.4 |
+| SuperGPQA [[20]](#ref-20) | **61.6** | 51.4 | 39.7 | 34.7 | 42.5 | 37.6 | 41.8 |
+| ARC-C [[23]](#ref-23) | 95.3 | **96.8** | 92.7 | 91.5 | 92.2 | 91.7 | 92.7 |
+| ARC-E [[23]](#ref-23) | 98.1 | **98.9** | 97.3 | 95.8 | 96.5 | 96.2 | 96.5 |
 | **Commonsense and reasoning** |  |  |  |  |  |  |  |
-| WinoGrande [[21]](#ref-21) | 77.90 | **87.00** | 74.60 | 75.90 | 76.40 | 65.30 | 72.70 |
-| HellaSwag [[22]](#ref-22) | 64.57 | **80.10** | 67.70 | 62.60 | 52.20 | 46.70 | 46.50 |
-| BBH [[24]](#ref-24) | 85.88 | 85.81 | 86.22 | 74.92 | 85.10 | 80.00 | **88.10** |
-| BBEH [[25]](#ref-25) | 29.07 | **34.31** | 25.10 | 12.26 | 16.60 | 9.22 | 12.79 |
-| DROP F1 [[31]](#ref-31) | 77.22 | 75.41 | **83.35** | 54.05 | 72.58 | 71.95 | 78.60 |
-| MuSR [[32]](#ref-32) | 60.42 | 64.78 | **65.07** | 52.45 | 62.18 | 58.24 | 64.49 |
-| LogiQA2 [[33]](#ref-33) | 72.23 | **81.30** | 68.70 | 57.60 | 73.50 | 67.30 | 76.80 |
+| WinoGrande [[21]](#ref-21) | 78.0 | **87.1** | 74.6 | 75.9 | 76.3 | 65.4 | 72.8 |
+| HellaSwag [[22]](#ref-22) | 64.5 | **80.1** | 67.7 | 62.7 | 52.3 | 46.6 | 46.6 |
+| BBH [[24]](#ref-24) | 85.9 | 86.0 | 86.2 | 74.9 | 85.2 | 80.2 | **88.1** |
+| BBEH [[25]](#ref-25) | 29.2 | **34.4** | 25.1 | 12.4 | 16.6 | 9.2 | 12.8 |
+| DROP F1 [[31]](#ref-31) | 77.3 | 75.4 | **83.3** | 54.0 | 72.5 | 71.9 | 78.7 |
+| MuSR [[32]](#ref-32) | 60.4 | 64.6 | **64.9** | 52.4 | 62.1 | 58.3 | 64.4 |
+| LogiQA2 [[33]](#ref-33) | 72.2 | **81.2** | 68.6 | 57.8 | 73.5 | 67.2 | 76.9 |
 | **Code** |  |  |  |  |  |  |  |
-| HumanEval [[26]](#ref-26) | 96.72 | 85.98 | 96.95 | 81.71 | 93.90 | 90.85 | **98.17** |
-| MBPP [[27]](#ref-27) | 87.81 | 70.80 | **92.60** | 64.00 | 79.20 | 72.20 | 92.20 |
-| LiveCodeBench v6 [[28]](#ref-28) | 61.63 | 76.20 | **76.30** | 35.80 | 69.50 | 67.10 | 70.80 |
+| HumanEval [[26]](#ref-26) | 96.9 | 86.1 | 96.9 | 81.5 | 93.9 | 90.9 | **98.2** |
+| MBPP [[27]](#ref-27) | 87.8 | 70.7 | **92.5** | 63.9 | 79.2 | 72.1 | 92.2 |
+| LiveCodeBench v6 [[28]](#ref-28) | 61.6 | 76.2 | **76.3** | 35.7 | 69.6 | 67.3 | 70.8 |
 | **Instruction following** |  |  |  |  |  |  |  |
-| IFEval [[29]](#ref-29) | 88.03 | 90.02 | **92.42** | 46.03 | 84.29 | 89.28 | 73.75 |
-| IFBench [[30]](#ref-30) | 65.29 | 60.33 | **74.33** | 14.67 | 34.67 | 57.67 | 23.67 |
+| IFEval [[29]](#ref-29) | 87.9 | 90.0 | **92.3** | 46.0 | 84.2 | 89.3 | 73.6 |
+| IFBench [[30]](#ref-30) | 65.2 | 60.2 | **74.4** | 14.5 | 34.7 | 57.7 | 23.6 |
+| **27-benchmark mean** | 77.7 | **79.7** | 75.2 | 56.3 | 64.9 | 65.3 | 71.5 |
 
 ## VL comparison
 
@@ -187,12 +187,12 @@ YANchor supports bilingual VL question answering, object-presence judgments, vis
 | Benchmark | YANchor-4B | Qwen3.5-4B [[1]](#ref-1) |
 | --- | ---: | ---: |
 | **Vision-language** |  |  |
-| MMBench EN [[34]](#ref-34) | 88.28 | **90.08** |
-| MMBench CN [[34]](#ref-34) | 89.00 | **91.43** |
-| POPE [[35]](#ref-35) | 85.43 | **88.76** |
-| MME [[36]](#ref-36) | 82.98 | **86.82** |
-| ChartQA [[37]](#ref-37) | 83.92 | **90.28** |
-| AI2D [[38]](#ref-38) | 80.05 | **86.98** |
+| MMBench EN [[34]](#ref-34) | 88.3 | **90.1** |
+| MMBench CN [[34]](#ref-34) | 89.0 | **91.4** |
+| POPE [[35]](#ref-35) | 85.4 | **88.8** |
+| MME [[36]](#ref-36) | 83.0 | **86.8** |
+| ChartQA [[37]](#ref-37) | 83.9 | **90.3** |
+| AI2D [[38]](#ref-38) | 80.0 | **87.0** |
 
 VL scores are answer-level accuracy in percent.
 
@@ -204,7 +204,7 @@ VL scores are answer-level accuracy in percent.
 
 ### Generation settings
 
-YANchor's text evaluation uses temperature 0.6, top-p 0.95, top-k 20, and a 131,072-token response budget. Completions beyond this budget receive zero outcome credit. VL evaluation uses one response per input with thinking enabled, temperature 1.0, top-p 0.95, top-k 20, presence penalty 1.5, and a 32,768-token response cap.
+YANchor's text evaluation uses temperature 0.6, top-p 0.95, top-k 20, and a 131,072-token response budget. VL evaluation uses one response per input with thinking enabled, temperature 1.0, top-p 0.95, top-k 20, presence penalty 1.5, and a 32,768-token response cap.
 
 ## Quickstart
 
@@ -267,7 +267,7 @@ Monitor progress and aggregate decode throughput from another terminal:
 docker run --rm -v "$PWD:/model" yanchor-runtime status --output outputs/text
 ```
 
-See [evaluation instructions](USAGE.md#evaluation) for text, vision and the four reported memory tasks, source selection, scoring rules and result files. The current full-split release expands the evaluation data. The benchmark tables retain the technical report’s original measurements; they have not been recomputed on this expanded release.
+See [evaluation instructions](USAGE.md#evaluation) for text, vision and the four reported memory tasks, source selection, scoring rules and result files.
 
 ## License
 

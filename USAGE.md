@@ -89,11 +89,9 @@ python -I run.py status --output outputs/text
 
 Use a fresh output directory for each evaluation. The CPU broker distributes attempts among GPU replicas; completed slots are refilled while other answers continue. Workers write response fragments, exit, and then CPU scoring starts. `--generate-only` stops after generation. Existing fragments can be scored with `python -I run.py score --model /weights --output outputs/text`, without GPUs.
 
-`/weights/data/MANIFEST.json` lists the designated evaluation splits and their complete question counts. The text evaluation contains **113,743 questions across 29 sources** and expands to **715,267 responses** under automatic K. The report presents 27 sources; the two HMMT 2025 sources remain available as additional evaluations. Auto-K uses the complete source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
+`/weights/data/MANIFEST.json` lists the designated evaluation splits and their complete question counts. The text evaluation contains **113,743 questions across 29 sources** and expands to **715,267 responses** under automatic K. The report compares 27 common text sources. Auto-K uses the complete source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
 
-This data release expands the evaluation coverage. The scores in the model card and technical report retain their original evaluation scope and have not been recomputed on this expanded release.
-
-Text generation uses temperature 0.6, top-k 20, top-p 0.95, no presence penalty, seed 20260923 and a 131,072-token output cap. The frozen `prompt_text` is the model input; references and executable tests are consumed only by CPU scorers. Every sampled trajectory contributes to the accuracy denominator. The published 128K cutoff gives no credit to trajectories longer than 131,072 tokens. Fixed seeds and large K support statistical reproduction; arithmetic order and batch shapes can change individual trajectories.
+Text generation uses temperature 0.6, top-k 20, top-p 0.95, no presence penalty, seed 20260923 and a 131,072-token output cap. The frozen `prompt_text` is the model input; references and executable tests are consumed only by CPU scorers. Every sampled trajectory contributes to the accuracy denominator. Fixed seeds and large K support statistical reproduction; arithmetic order and batch shapes can change individual trajectories.
 
 The visual panel contains 26,668 inputs from seven sources. The report presents six of them; OCRBench is included as an additional evaluation. It uses K1, reference arithmetic, B128, temperature 1, top-k 20, top-p 0.95, presence penalty 1.5, seed 20260912 and a 32,768-token cap. One damaged AI2D item is excluded by the supplied reference correction, leaving 26,667 scored responses. Image processing uses the included visual frontend and a 65,536–4,194,304 pixel range.
 
@@ -117,7 +115,7 @@ All 29 text sources use the v41 answer-verification implementation in `runtime/e
 | MuSR | Option accuracy, macro-averaged over the three task subsets. |
 | LogiQA2 | Option accuracy over the supplied English panel. |
 
-For original text sources, the primary metric is `official_primary_mean_pass_at_1`; for the three extensions it is `score`. Source-specific macro averages and the corrected MMLU-Redux view are preserved. Mean accuracy averages the K sampled answers, with all question × K attempts in the denominator; observed pass@K is reported separately.
+The primary metric is `official_primary_mean_pass_at_1` for correctness-based text tasks and `score` for DROP, MuSR and LogiQA2. Source-specific macro averages and the corrected MMLU-Redux view are preserved. Mean accuracy averages the K sampled answers, with all question × K attempts in the denominator; observed pass@K is reported separately.
 
 The final-answer region is preferred. A clearly committed terminal answer in reasoning can retain semantic correctness while failing the strict output contract. Extraction never chooses a candidate because it matches the reference. Unresolved answers receive no success credit and retain diagnostic verdicts. Visual metrics include source accuracy, MMBench circular accuracy, MME category totals and POPE precision/recall/F1, without an external model judge.
 
