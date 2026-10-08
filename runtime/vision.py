@@ -64,7 +64,7 @@ def generate_visual(args,claim,write,report):
     processor=AutoProcessor.from_pretrained(args.model/'vision',local_files_only=True)
     processor.tokenizer.padding_side='left'
     processor.image_processor.size={'longest_edge':4194304,'shortest_edge':65536}
-    media=ZipFile(args.model/'data/vision/media.zip')
+    media=ZipFile(args.model/'evaluation_data/vision/media.zip')
     pool=ThreadPoolExecutor(20)
     def image(row):
         from PIL import Image

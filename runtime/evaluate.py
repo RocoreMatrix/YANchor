@@ -58,14 +58,14 @@ def prepare(args):
     import duckdb
     output=args.output.resolve()
     output.mkdir(parents=True,exist_ok=True)
-    manifest=json.loads((args.model/'data/MANIFEST.json').read_text())
+    manifest=json.loads((args.model/'evaluation_data/MANIFEST.json').read_text())
     database=output/'tasks.duckdb'
     db=duckdb.connect(str(database),config={'threads':args.cpu_workers})
     if args.suite=='vision':
-        path=str(args.model/'data/vision/questions/*.jsonl')
+        path=str(args.model/'evaluation_data/vision/questions/*.jsonl')
         db.execute('CREATE TABLE raw AS SELECT *, id AS source_sample_id FROM read_json_auto(?, union_by_name=true)',[path])
     else:
-        db.execute('CREATE TABLE raw AS SELECT * FROM read_parquet(?, union_by_name=true)',[str(args.model/f'data/{args.suite}/*.parquet')])
+        db.execute('CREATE TABLE raw AS SELECT * FROM read_parquet(?, union_by_name=true)',[str(args.model/f'evaluation_data/{args.suite}/*.parquet')])
     counts=manifest[args.suite]['sources']
     db.execute('CREATE TABLE sampling(source VARCHAR,k INTEGER)')
     db.executemany('INSERT INTO sampling VALUES (?,?)',[(s,args.k if args.k is not None else
@@ -246,7 +246,7 @@ def score_fragment(task):
         else:
             metadata=json.loads(row['metadata_json'])
             if metadata.get('lcb_payload_path'):
-                metadata['lcb_payload_path']=str(_ASSETS/metadata['lcb_payload_path'])
+                metadata['lcb_payload_path']=str(_ASSETS/'evaluation_data/code_tests'/Path(metadata['lcb_payload_path']).name)
                 row['metadata_json']=json.dumps(metadata,ensure_ascii=False)
             result=score_one(_ENGINE,row,*_IDS)
         results.append(result)

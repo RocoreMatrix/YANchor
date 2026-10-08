@@ -89,13 +89,13 @@ python -I run.py status --output outputs/text
 
 Use a fresh output directory for each evaluation. The CPU broker distributes attempts among GPU replicas; completed slots are refilled while other answers continue. Workers write response fragments, exit, and then CPU scoring starts. `--generate-only` stops after generation. Existing fragments can be scored with `python -I run.py score --model /weights --output outputs/text`, without GPUs.
 
-`/weights/data/MANIFEST.json` lists the designated evaluation splits and their complete question counts. The text evaluation contains **113,743 questions across 29 sources** and expands to **715,267 responses** under automatic K. The report compares 27 common text sources. Auto-K uses the complete source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
+`/weights/evaluation_data/MANIFEST.json` lists the designated evaluation splits and their complete question counts. The text evaluation contains **113,743 questions across 29 sources** and expands to **715,267 responses** under automatic K. The report compares 27 common text sources. Auto-K uses the complete source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
 
 Text generation uses temperature 0.6, top-k 20, top-p 0.95, no presence penalty, seed 20260923 and a 131,072-token output cap. The frozen `prompt_text` is the model input; references and executable tests are consumed only by CPU scorers. Every sampled trajectory contributes to the accuracy denominator. Fixed seeds and large K support statistical reproduction; arithmetic order and batch shapes can change individual trajectories.
 
 The visual panel contains 26,668 inputs from seven sources. The report presents six of them; OCRBench is included as an additional evaluation. It uses K1, reference arithmetic, B128, temperature 1, top-k 20, top-p 0.95, presence penalty 1.5, seed 20260912 and a 32,768-token cap. One damaged AI2D item is excluded by the supplied reference correction, leaving 26,667 scored responses. Image processing uses the included visual frontend and a 65,536–4,194,304 pixel range.
 
-Visual media are stored losslessly in `data/vision/media.zip` and read directly by the evaluator; extraction is not required.
+Visual media are stored losslessly in `evaluation_data/vision/media.zip` and read directly by the evaluator; extraction is not required.
 
 The memory panel contains only the four tasks in Section 9 of the technical report: exact retrieval, state-update interpretation, cross-document combination and variable binding. Each task has 64 contexts, for 256 contexts and 1,024 queries in total. Contexts form original/counterfactual pairs and span approximately 16K–130K tokens. Evaluation uses greedy K1, reference arithmetic, B1, seed 2026091707 and a 1,024-token output cap. Results include query accuracy, all-four-correct accuracy, the four task breakdowns, and both-correct accuracy for paired queries whose answers should change or remain stable.
 
