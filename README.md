@@ -250,7 +250,7 @@ See [deployment and benchmarking](USAGE.md#demo-and-batch-inference) for request
 
 ## Reproducing the evaluations
 
-The complete model bundle includes the frozen evaluation inputs and scoring code. The following command runs the full bundled text panel on one H100; expand `--gpus` to a comma-separated list to use more GPUs:
+The complete model bundle includes the frozen evaluation inputs and scoring code. By default, the evaluator runs every question supplied for each text source, with no additional per-source question limit. The following command uses one H100; expand `--gpus` to a comma-separated list to use more GPUs:
 
 ```bash
 docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
@@ -265,7 +265,7 @@ Monitor progress and aggregate decode throughput from another terminal:
 docker run --rm -v "$PWD:/model" yanchor-runtime status --output outputs/text
 ```
 
-See [evaluation instructions](USAGE.md#evaluation) for text, vision and the four reported memory tasks, source selection, scoring rules and result files. Reduced question counts, K or token budgets are suitable for installation checks; use the full protocol to reproduce the reported results.
+See [evaluation instructions](USAGE.md#evaluation) for text, vision and the four reported memory tasks, source selection, scoring rules and result files. Use the documented evaluation sets, K and token budgets to reproduce the reported results.
 
 ## License
 
