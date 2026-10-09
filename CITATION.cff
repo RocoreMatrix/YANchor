@@ -10,7 +10,7 @@ authors:
     given-names: Weiming
   - family-names: Ye
     given-names: Qirui
-repository-code: "https://github.com/RocoreMatrix/YANchor"
+repository-code: "https://github.com/rockmatrix-ai/YANchor"
 preferred-citation:
   type: article
   title: "YANchor-4B: Effective Long-Horizon Reasoning in O(N) Time with O(1) Memory"

@@ -1,11 +1,11 @@
 <div align="center">
   <h1>YANchor-4B</h1>
   <h3>Effective Long-Horizon Reasoning<br>in O(N) Time with O(1) Memory</h3>
-  <p>Rocore Matrix · October 2026 · arXiv:2610.10118</p>
+  <p>Rock Matrix · October 2026 · arXiv:2610.10118</p>
   <p>
     📄 <a href="https://arxiv.org/abs/2610.10118"><b>Technical Report</b></a>
     &nbsp; | &nbsp;
-    💻 <a href="https://github.com/RocoreMatrix/YANchor">GitHub</a>
+    💻 <a href="https://github.com/rockmatrix-ai/YANchor">GitHub</a>
     &nbsp; | &nbsp;
     🤗 <a href="https://huggingface.co/HuishanJi/YANchor-4B">Hugging Face</a>
     &nbsp; | &nbsp;
