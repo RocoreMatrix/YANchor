@@ -71,6 +71,10 @@ def sample_probabilities_counter(probabilities: Tensor, attempt_ids: Tensor, ste
     return _sample_cdf_counter(normalized, attempt_ids, steps, seed=seed, stream=stream)
 
 def sample_top_k_top_p_counter(scores: Tensor, attempt_ids: Tensor, steps: Tensor | int, *, seed: int, temperature: float, top_k: int, top_p: float, stream: int=0) -> Tensor:
+    if scores.device.type == 'mps':
+        step = steps.cpu() if isinstance(steps, Tensor) else steps
+        return sample_top_k_top_p_counter(scores.cpu(), attempt_ids.cpu(), step, seed=seed,
+            temperature=temperature, top_k=top_k, top_p=top_p, stream=stream).to(scores.device)
     if top_k <= 0 and top_p == 1.0:
         probabilities = torch.softmax(scores.float() / temperature, dim=-1)
         ranks = _sample_cdf_counter(probabilities, attempt_ids, steps, seed=seed, stream=stream)
@@ -78,7 +82,8 @@ def sample_top_k_top_p_counter(scores: Tensor, attempt_ids: Tensor, steps: Tenso
     if top_k == 1:
         indices = scores.argmax(dim=-1, keepdim=True)
         return indices
-    indices, probabilities = top_k_top_p_distribution(scores, temperature=temperature, top_k=top_k, top_p=top_p)
+    indices, probabilities = top_k_top_p_distribution(scores, temperature=temperature,
+        top_k=top_k if top_k > 0 else scores.shape[-1], top_p=top_p)
     ranks = sample_probabilities_counter(probabilities, attempt_ids, steps, seed=seed, stream=stream)
     return indices.gather(1, ranks)
 
@@ -220,7 +225,7 @@ def triton_qwen35_rmsnorm_exact_epilogue(values: torch.Tensor, gamma: torch.Tens
     return output
 
 @triton.jit
-def _qwen35_rmsnorm_torch_tree_kernel(X, U, Gamma, Out, Residual, WIDTH: tl.constexpr, EPS: tl.constexpr, BLOCK: tl.constexpr, ADD: tl.constexpr, BW: tl.constexpr):
+def _qwen35_rmsnorm_torch_tree_kernel(X, U, Gamma, Out, Residual, WIDTH: tl.constexpr, EPS: tl.constexpr, BLOCK: tl.constexpr, ADD: tl.constexpr, BW: tl.constexpr, ROUND_ADD: tl.constexpr):
     row = tl.program_id(0)
     lane, component = (tl.arange(0, BW), tl.arange(0, 4))
     accum = tl.full((BW, 4), 0.0, tl.float32)
@@ -229,7 +234,9 @@ def _qwen35_rmsnorm_torch_tree_kernel(X, U, Gamma, Out, Residual, WIDTH: tl.cons
         x = tl.load(X + row * WIDTH + col, col < WIDTH, 0).to(tl.float32)
         if ADD:
             u = tl.load(U + row * WIDTH + col, col < WIDTH, 0).to(tl.float32)
-            x = (x + u).to(X.dtype.element_ty).to(tl.float32)
+            x = x + u
+            if ROUND_ADD:
+                x = x.to(X.dtype.element_ty).to(tl.float32)
             tl.store(Residual + row * WIDTH + col, x, col < WIDTH)
         accum = accum + x * x
     value = tl.sum(tl.where(component[None, :] == 0, accum, 0.0), 1)
@@ -241,22 +248,26 @@ def _qwen35_rmsnorm_torch_tree_kernel(X, U, Gamma, Out, Residual, WIDTH: tl.cons
     mean = tl.sum(tl.where(lane == 0, value, 0.0), 0) * (1.0 / WIDTH)
     inv = tl.rsqrt(mean + EPS)
     col = tl.arange(0, BLOCK)
-    if ADD:
+    if ADD and ROUND_ADD:
         x = tl.load(Residual + row * WIDTH + col, col < WIDTH, 0).to(tl.float32)
     else:
         x = tl.load(X + row * WIDTH + col, col < WIDTH, 0).to(tl.float32)
+        if ADD:
+            x += tl.load(U + row * WIDTH + col, col < WIDTH, 0).to(tl.float32)
     gamma = tl.load(Gamma + col, col < WIDTH, 0)
     tl.store(Out + row * WIDTH + col, x * inv * gamma, col < WIDTH)
 
-def triton_qwen35_rmsnorm_torch_tree(values, gamma, eps, update=None):
+def triton_qwen35_rmsnorm_torch_tree(values, gamma, eps, update=None, round_update=True):
     values = values.contiguous()
     width = values.shape[-1]
     rows = values.numel() // width
+    if rows == 0:
+        return values, values
     block_height = min(1 << rows.bit_length() - 1, 16)
     block_width = min(1 << (width // 4).bit_length() - 1, 512 // block_height)
     output = torch.empty_like(values)
     summed = torch.empty_like(values) if update is not None else values
-    _qwen35_rmsnorm_torch_tree_kernel[rows,](values, values if update is None else update, gamma, output, summed, width, float(eps), triton.next_power_of_2(width), update is not None, block_width, num_warps=4, enable_fp_fusion=False)
+    _qwen35_rmsnorm_torch_tree_kernel[rows,](values, values if update is None else update, gamma, output, summed, width, float(eps), triton.next_power_of_2(width), update is not None, block_width, round_update, num_warps=4, enable_fp_fusion=False)
     return (summed, output)
 
 def _native_rmsnorm_forward(module, values: torch.Tensor) -> torch.Tensor:
@@ -312,6 +323,18 @@ def enable_native_rmsnorm_inference(model: torch.nn.Module, *, torch_tree: bool=
         patched += 1
     refresh_native_rmsnorm_inference(model)
     return patched
+
+def _framework_rmsnorm_forward(module, values, residual=None):
+    summed, output = triton_qwen35_rmsnorm_torch_tree(values,
+        module._qwen35_native_rms_gamma, module.variance_epsilon, update=residual, round_update=False)
+    return output if residual is None else (output, summed)
+
+@torch.no_grad()
+def enable_framework_rmsnorm_inference(model, norm_class):
+    for module in model.modules():
+        if isinstance(module, norm_class):
+            module.register_buffer('_qwen35_native_rms_gamma', 1.0 + module.weight.float(), persistent=False)
+            module.forward = MethodType(_framework_rmsnorm_forward, module)
 
 @triton.jit
 def _qwen35_graph_safe_conv_update_kernel(input_ptr, state_ptr, weight_ptr, bias_ptr, output_ptr, input_sb: tl.constexpr, input_sc: tl.constexpr, state_sb: tl.constexpr, state_sc: tl.constexpr, state_sk: tl.constexpr, weight_sc: tl.constexpr, weight_sk: tl.constexpr, output_sb: tl.constexpr, output_sc: tl.constexpr, CHANNELS: tl.constexpr, KERNEL_SIZE: tl.constexpr, HAS_BIAS: tl.constexpr, APPLY_SILU: tl.constexpr, BLOCK_C: tl.constexpr):
@@ -796,6 +819,49 @@ def enable_int8_mlp_b1_inference(model: torch.nn.Module) -> int:
             changed += 1
     model.config.fixed_memory_int8_mlp_b1 = True
     return changed
+
+def _native_int8_mlp_forward(module, values, *args, **kwargs):
+    if module._qwen35_int8_mlp_decode_context[0] and values.numel() == values.shape[-1]:
+        gate_up = _int8_group_mlp_linear(values, module._qwen35_int8_gate_up_weight, module._qwen35_int8_gate_up_scales)
+        hidden = triton_qwen35_silu_mul(gate_up, gate_up.shape[-1] // 2)
+        return _int8_group_mlp_linear(hidden, module._qwen35_int8_down_weight, module._qwen35_int8_down_scales)
+    return module._qwen35_native_mlp_forward(values, *args, **kwargs)
+
+@torch.no_grad()
+def enable_native_int8_mlp_b1(model, decode_context):
+    for module in model.modules():
+        if hasattr(module, 'gate_up_proj') and hasattr(module, 'down_proj'):
+            module._qwen35_gate_up_weight = module.gate_up_proj.weight.detach()
+            _refresh_int8_group_mlp(module)
+            module._qwen35_int8_mlp_decode_context = decode_context
+            module._qwen35_native_mlp_forward = module.forward
+            module.forward = MethodType(_native_int8_mlp_forward, module)
+
+def _native_packed_qkvz_forward(module, values, *args, **kwargs):
+    if module._qwen35_decode_context[0] and values.numel() == values.shape[-1]:
+        projected = F.linear(values, module._qwen35_qkvz_ba_weight)
+        width = module.weight.shape[0]
+        module._qwen35_ba_output[0] = projected[..., width:]
+        return projected[..., :width], None
+    return module._qwen35_projection_forward(values, *args, **kwargs)
+
+def _native_packed_ba_forward(module, values, *args, **kwargs):
+    if module._qwen35_decode_context[0] and values.numel() == values.shape[-1]:
+        return module._qwen35_ba_output[0], None
+    return module._qwen35_projection_forward(values, *args, **kwargs)
+
+@torch.no_grad()
+def enable_native_packed_gdn_b1(model, decode_context):
+    for module in model.modules():
+        if hasattr(module, 'in_proj_qkvz') and hasattr(module, 'in_proj_ba'):
+            qkvz, ba = module.in_proj_qkvz, module.in_proj_ba
+            qkvz.register_buffer('_qwen35_qkvz_ba_weight', torch.cat((qkvz.weight, ba.weight), 0), persistent=False)
+            shared = [None]
+            for projection, forward in ((qkvz, _native_packed_qkvz_forward), (ba, _native_packed_ba_forward)):
+                projection._qwen35_ba_output = shared
+                projection._qwen35_decode_context = decode_context
+                projection._qwen35_projection_forward = projection.forward
+                projection.forward = MethodType(forward, projection)
 
 def _packed_mlp_forward(module, values: torch.Tensor) -> torch.Tensor:
     if not getattr(module, '_qwen35_packed_mlp_enabled', True):
@@ -1474,6 +1540,12 @@ def cuda_graph_generate_top20_dynamic_refill(model: torch.nn.Module, input_ids: 
                     mechanical_repetition_pattern_counts[pattern_tokens] = mechanical_repetition_pattern_counts.get(pattern_tokens, 0) + 1
                 if detected_slots:
                     finished[torch.tensor(detected_slots, device=device, dtype=torch.long)] = True
+        if stream is not None and stream.on_tokens is not None:
+            streaming_rows = slot_rows[slot_rows >= 0].cpu().tolist()
+            streaming_lengths = generated_lengths[streaming_rows].cpu().tolist()
+            for row, length in zip(streaming_rows, streaming_lengths):
+                sent = stream.sent_lengths.get(row, 0)
+                stream.push_tokens(row, storage[row, sent:length].cpu().tolist())
         target_slots = torch.nonzero(finished, as_tuple=False).flatten().detach().cpu().tolist()
         if target_slots:
             target_tensor = torch.tensor(target_slots, device=device, dtype=torch.long)

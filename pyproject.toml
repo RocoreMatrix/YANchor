@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yanchor-runtime"
+version = "0.1.0"
+description = "Inference runtime for YANchor-4B"
+requires-python = ">=3.10"
+dependencies = ["torch>=2.6", "transformers==5.7.0.dev0", "safetensors>=0.7", "numpy>=2", "accelerate>=1.13"]
+license = "Apache-2.0"
+license-files = ["LICENSE*", "NOTICE"]
+
+[project.optional-dependencies]
+cuda = ["fla-core==0.5.1", "tilelang==0.1.9", "causal-conv1d==1.6.2.post1", "flash-attn>=2.8,<3"]
+evaluation = ["pyarrow==23.0.1", "duckdb==1.2.2", "scipy==1.17.1", "sympy==1.14.0", "pillow==12.1.1", "nltk==3.9.2", "math-verify==0.9.0", "latex2sympy2-extended==1.11.0", "antlr4-python3-runtime==4.13.2", "sentencepiece==0.2.1", "absl-py==2.3.1", "z3-solver==4.15.4.0", "emoji==2.15.0", "syllapy==0.7.2", "langdetect==1.0.9", "immutabledict==4.2.2"]
+
+[project.entry-points."vllm.general_plugins"]
+yanchor = "vllm_yanchor:register"
+
+[project.scripts]
+yanchor = "run:main"
+
+[tool.setuptools]
+py-modules = ["run", "configuration_yanchor", "modeling_yanchor", "vllm_yanchor"]
+
+[tool.setuptools.packages.find]
+include = ["runtime*", "sglang_models*"]
+namespaces = true

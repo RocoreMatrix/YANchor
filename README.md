@@ -213,9 +213,9 @@ YANchor's text evaluation uses temperature 0.6, top-p 0.95, top-k 20, and a 131,
 
 ### Environment
 
-The released runtime is validated on **NVIDIA H100 80 GB with Linux**. Use Docker with NVIDIA Container Toolkit and the supplied `Dockerfile`, based on `nvcr.io/nvidia/pytorch:26.03-py3`. The image supplies PyTorch, CUDA and FlashAttention; the remaining dependencies, including the pinned public Transformers wheel, are included or specified in the bundle.
+The accelerated runtime is validated on **NVIDIA H100 80 GB with Linux**. Use Docker with NVIDIA Container Toolkit and the supplied `Dockerfile`, based on `nvcr.io/nvidia/pytorch:26.03-py3`. The image supplies PyTorch, CUDA and FlashAttention; the remaining dependencies, including the pinned public Transformers wheel, are included or specified in the bundle.
 
-YANchor-4B uses the custom inference runtime provided through **`run.py`**. Use this entrypoint to load the model and its memory modules.
+YANchor-4B supports **Transformers `AutoModelForCausalLM` with `trust_remote_code=True`**, a portable PyTorch backend, and the optimized **`run.py`** runtime. CPU FP32 and H100 BF16 generation are verified. Native vLLM and SGLang adapters provide single-GPU text serving; see [runtime choices and usage](USAGE.md#runtime-choices) for installation, supported configurations and OpenAI-compatible streaming.
 
 ### Download and run
 

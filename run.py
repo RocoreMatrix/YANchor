@@ -5,14 +5,9 @@ import sys
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'runtime'))
 os.environ.pop('PYTHONPATH', None)
-os.environ.update(FLA_TILELANG='1', FLA_CACHE_MODE='default',
-    FLA_CONFIG_DIR=str(ROOT / 'runtime/fla_h100'), TOKENIZERS_PARALLELISM='false',
-    OMP_NUM_THREADS='1', MKL_NUM_THREADS='1',
-    NLTK_DATA=str(ROOT / 'runtime/third_party/verifiers/nltk_data'))
-os.environ.setdefault('CUDA_HOME', '/usr/local/cuda')
-os.environ.setdefault('PYTORCH_CUDA_ALLOC_CONF', 'expandable_segments:True')
 
 import argparse
 import json
@@ -25,7 +20,7 @@ from inference import ROOT, Engine, dump
 def benchmark(args):
     import torch
     from model.inference_kernels import cuda_graph_generate_top20_dynamic_refill
-    engine = Engine(args.model, args.batch, args.profile)
+    engine = Engine(args.model, args.batch, args.profile, backend='cuda')
     groups = args.batch // args.k
     positions = torch.arange(args.prefill).unsqueeze(0)
     group_ids = torch.arange(groups).unsqueeze(1)
@@ -70,35 +65,119 @@ def benchmark(args):
 
 
 def serve(args):
-    from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from queue import Queue
     import threading
-    engine=Engine(args.model,args.batch,args.profile)
-    warmup_started=time.perf_counter()
-    if args.batch==1:
-        engine.generate([dict(prompt='Compute 17 × 23.',max_tokens=32)],
-            cap=args.max_new_tokens,mechanical=False)
-    warmup_seconds=time.perf_counter()-warmup_started
-    lock=threading.Lock()
+    import uuid
+    from transformers import TextStreamer
+    engine = Engine(args.model, args.batch, args.profile, backend=args.backend, device=args.device, dtype=args.dtype)
+    warmup_started = time.perf_counter()
+    if args.batch == 1:
+        engine.generate([dict(prompt='Compute 17 × 23.', max_tokens=16)], cap=16, mechanical=False)
+    lock = threading.Lock()
+
     class Handler(BaseHTTPRequestHandler):
+        def send_json(self, value, status=200):
+            body = json.dumps(value, ensure_ascii=False).encode()
+            self.send_response(status)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
         def do_GET(self):
-            body=json.dumps({'status':'READY','batch_capacity':args.batch}).encode()
-            self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(body)
+            if self.path == '/v1/models':
+                self.send_json(dict(object='list', data=[dict(id='YANchor-4B', object='model', owned_by='RocoreMatrix')]))
+            else:
+                self.send_json(dict(status='READY', model='YANchor-4B', backend=engine.backend, batch_capacity=args.batch))
+
         def do_POST(self):
-            request=json.loads(self.rfile.read(int(self.headers['Content-Length'])))
-            prompts=request.get('prompts')
-            if prompts is None:
-                prompts=[{'messages':request['messages']}]
-            settings={k:request[k] for k in ['temperature','top_k','top_p','presence_penalty','seed'] if k in request}
-            with lock:
-                rows,metrics=engine.generate(prompts,cap=int(request.get('max_new_tokens',args.max_new_tokens)),**settings)
-            body=json.dumps({'outputs':rows,'metrics':metrics},ensure_ascii=False).encode()
-            self.send_response(200);self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(body)
-    print(json.dumps({'status':'READY','host':args.host,'port':args.port,'batch':args.batch,
-        'warmup_seconds':warmup_seconds}),flush=True)
-    ThreadingHTTPServer((args.host,args.port),Handler).serve_forever()
+            try:
+                request = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+                standard = self.path == '/v1/chat/completions'
+                if self.path not in {'/', '/v1/chat/completions'}:
+                    self.send_json({'error': {'message': 'Unknown endpoint'}}, 404)
+                    return
+                unsupported = [key for key in ['tools', 'tool_choice', 'response_format', 'stop'] if request.get(key)]
+                if unsupported or request.get('n', 1) != 1:
+                    self.send_json({'error': {'message': 'This endpoint supports plain text chat with n=1.'}}, 400)
+                    return
+                prompts = [{'messages': request['messages']}] if standard else request.get('prompts') or [{'messages': request['messages']}]
+                settings = {key: request[key] for key in ['temperature', 'top_k', 'top_p', 'presence_penalty', 'seed'] if key in request}
+                cap = int(request.get('max_completion_tokens', request.get('max_tokens', request.get('max_new_tokens', args.max_new_tokens))))
+                identity, created = 'chatcmpl-' + uuid.uuid4().hex, int(time.time())
+
+                def completion(rows):
+                    row = rows[0]
+                    text = engine.tokenizer.decode([t for t in row['response_ids'] if t not in (248044, 248046)], skip_special_tokens=False)
+                    usage = dict(prompt_tokens=row['prompt_tokens'], completion_tokens=row['generated_tokens'], total_tokens=row['prompt_tokens']+row['generated_tokens'])
+                    reason = 'length' if row['cap_hit'] else 'stop'
+                    return text, usage, reason
+
+                if standard and request.get('stream'):
+                    queue = Queue()
+                    class TokenStream(TextStreamer):
+                        def on_finalized_text(self, text, stream_end=False):
+                            if text:
+                                queue.put(('text', text))
+                    decoder = TokenStream(engine.tokenizer, skip_prompt=False, skip_special_tokens=False)
+                    def on_tokens(attempt, tokens):
+                        tokens = [t for t in tokens if t not in (248044, 248046)]
+                        if tokens:
+                            decoder.put(engine.torch.tensor(tokens)[None])
+                    def generate():
+                        try:
+                            with lock:
+                                rows, metrics = engine.generate(prompts, cap=cap, on_tokens=on_tokens, **settings)
+                            decoder.end()
+                            queue.put(('done', completion(rows)))
+                        except Exception as error:
+                            queue.put(('error', str(error)))
+                    threading.Thread(target=generate, daemon=True).start()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/event-stream')
+                    self.send_header('Cache-Control', 'no-cache')
+                    self.end_headers()
+                    def event(value):
+                        self.wfile.write(('data: ' + json.dumps(value, ensure_ascii=False) + '\n\n').encode())
+                        self.wfile.flush()
+                    event(dict(id=identity, object='chat.completion.chunk', created=created, model='YANchor-4B', choices=[dict(index=0, delta={'role':'assistant'}, finish_reason=None)]))
+                    while True:
+                        kind, value = queue.get()
+                        if kind == 'error':
+                            event({'error': {'message': value}})
+                            break
+                        if kind == 'text':
+                            event(dict(id=identity, object='chat.completion.chunk', created=created, model='YANchor-4B', choices=[dict(index=0, delta={'content':value}, finish_reason=None)]))
+                        else:
+                            text, usage, reason = value
+                            event(dict(id=identity, object='chat.completion.chunk', created=created, model='YANchor-4B', choices=[dict(index=0, delta={}, finish_reason=reason)]))
+                            if request.get('stream_options', {}).get('include_usage'):
+                                event(dict(id=identity, object='chat.completion.chunk', created=created, model='YANchor-4B', choices=[], usage=usage))
+                            break
+                    self.wfile.write(b'data: [DONE]\n\n')
+                    self.wfile.flush()
+                    return
+                with lock:
+                    rows, metrics = engine.generate(prompts, cap=cap, **settings)
+                if standard:
+                    text, usage, reason = completion(rows)
+                    self.send_json(dict(id=identity, object='chat.completion', created=created, model='YANchor-4B', choices=[dict(index=0, message={'role':'assistant', 'content':text}, finish_reason=reason)], usage=usage))
+                else:
+                    self.send_json(dict(outputs=rows, metrics=metrics))
+            except (KeyError, TypeError, ValueError) as error:
+                self.send_json({'error': {'message': str(error)}}, 400)
+            except (BrokenPipeError, ConnectionResetError):
+                return
+
+    print(json.dumps(dict(status='READY', host=args.host, port=args.port, backend=engine.backend,
+        batch=args.batch, warmup_seconds=time.perf_counter()-warmup_started)), flush=True)
+    ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 
 
 def main():
+    os.environ.setdefault('TOKENIZERS_PARALLELISM', 'false')
+    os.environ.setdefault('NLTK_DATA', str(ROOT/'runtime/third_party/verifiers/nltk_data'))
     if len(sys.argv)>1 and sys.argv[1]=='_verify':
         kind=sys.argv[2]
         sys.argv=[sys.argv[0],*sys.argv[3:]]
@@ -111,7 +190,10 @@ def main():
         p.add_argument('--model',type=Path,default=ROOT)
         p.add_argument('--output',type=Path,default=Path('outputs')/name)
         if name in {'demo','generate','serve','benchmark','evaluate','_worker'}:
-            p.add_argument('--batch',type=int,choices=[1,32,64,128,256,320,512],default=1 if name=='demo' else 320)
+            p.add_argument('--batch',type=int,default=1 if name in {'demo','serve'} else 320)
+            p.add_argument('--backend',choices=['auto','torch','cuda'],default='auto')
+            p.add_argument('--device')
+            p.add_argument('--dtype',choices=['float32','float16','bfloat16'])
             p.add_argument('--profile',choices=['fast','reference'],default='fast')
             p.add_argument('--max-new-tokens',type=int,default=4096 if name in {'demo','benchmark'} else 131072)
         if name in {'demo','generate','evaluate','_worker'}:
@@ -148,7 +230,7 @@ def main():
         serve(args)
     elif args.command in {'demo','generate'}:
         prompts=[args.prompt] if args.command=='demo' else [json.loads(line) for line in args.input.read_text().splitlines() if line.strip()]
-        engine=Engine(args.model,args.batch,args.profile)
+        engine=Engine(args.model,args.batch,args.profile,backend=args.backend,device=args.device,dtype=args.dtype)
         rows,metrics=engine.generate(prompts,cap=args.max_new_tokens,seed=args.seed)
         args.output.mkdir(parents=True,exist_ok=True)
         (args.output/'responses.jsonl').write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in rows))

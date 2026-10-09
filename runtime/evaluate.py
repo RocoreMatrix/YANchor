@@ -132,7 +132,10 @@ def evaluate(args):
         rank,gpu=pair
         cmd=[sys.executable,'-I',str(ROOT/'run.py'),'_worker','--rank',str(rank),'--port',str(port),
              '--suite',args.suite,'--model',str(args.model),'--output',str(args.output),'--batch',str(args.batch),
-             '--profile',args.profile,'--max-new-tokens',str(args.max_new_tokens),'--seed',str(args.seed)]
+             '--profile',args.profile,'--backend',args.backend,'--max-new-tokens',str(args.max_new_tokens),'--seed',str(args.seed)]
+        for name in ['device', 'dtype']:
+            if getattr(args, name):
+                cmd.extend(['--' + name, getattr(args, name)])
         with (args.output/f'rank-{rank}.log').open('w') as log:
             return subprocess.run(cmd,env={**os.environ,'CUDA_VISIBLE_DEVICES':gpu},stdout=log,stderr=subprocess.STDOUT).returncode
     gpus=args.gpus.split(',')
@@ -180,7 +183,7 @@ def worker(args):
         from vision import generate_visual
         metrics=generate_visual(args,broker.claim,write,report)
     else:
-        engine=Engine(args.model,args.batch,args.profile)
+        engine=Engine(args.model,args.batch,args.profile,backend=args.backend,device=args.device,dtype=args.dtype)
         def fetch(count):
             rows=broker.claim(count)
             for row in rows:

@@ -25,6 +25,13 @@ f53ca05d02d24372c3de27e2c59d5cf857050efb, under Apache License 2.0.
 https://github.com/huggingface/transformers/commit/f53ca05d02d24372c3de27e2c59d5cf857050efb
 Its original license and notices are included in the wheel.
 
+
+Native serving adapters include portions adapted from vLLM (Apache-2.0),
+Copyright contributors to the vLLM project, and SGLang (Apache-2.0),
+Copyright 2025 Qwen Team and SGLang Team.
+https://github.com/vllm-project/vllm
+https://github.com/sgl-project/sglang
+
 Required third-party metric implementations retain their own licenses.
 Benchmark questions, images, references and executable tests remain subject
 to their original authors' and distributors' terms; they are not relicensed
