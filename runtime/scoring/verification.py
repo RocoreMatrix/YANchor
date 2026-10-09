@@ -14,7 +14,7 @@ RESULT_SCHEMA = 'yanchor-verdict-v1'
 EXTERNAL_REQUEST_SCHEMA = 'yanchor-verifier-request-v1'
 TASK_TYPES = frozenset({'math', 'choice', 'code', 'stem', 'general', 'retrieval', 'ifeval', 'ifbench'})
 VERDICTS = frozenset({'PASS', 'FAIL', 'UNCERTAIN'})
-CPU_VERIFIER_REVISION = 'cpu_first_typed_tristate_final_answer_equivalence_v41'
+CPU_VERIFIER_REVISION = 'cpu_first_typed_tristate_final_answer_equivalence_v43'
 CODE_VERIFIER_MODES = frozenset({'python_harness', 'code'})
 INSTRUCTION_VERIFIER_MODES = frozenset({'ifbench', 'ifeval'})
 MATH_EXTERNAL_VERIFIER_MODES = frozenset({'math_equivalence', 'symbolic', 'expression', 'numeric_equivalence', 'set'})
@@ -698,10 +698,12 @@ def choice_value(value: Any) -> str | None:
     match = re.fullmatch('(?:OPTION)?[\\(\\[]?([A-Z])[\\)\\].:]?', text)
     return match.group(1) if match else None
 
-def choice_answer_value(value: Any, problem: str='') -> str | None:
+def choice_answer_value(value: Any, problem: str='', *, allow_explanation: bool=False) -> str | None:
     text = re.sub('\\s*[✅✔✓]\\ufe0f?\\s*$', '', str(value).strip())
     text = _choice_display_text(text)
-    text = re.sub('^(?:(?:the\\s+)?(?:(?:correct|final)\\s+)?(?:answer|option)\\s*(?:is|[:：])\\s*|(?:最终)?答案(?:字母)?\\s*(?:为|是|[:：])\\s*|选项\\s*)', '', text, flags=re.I)
+    prefix = '^(?:(?:the\\s+)?(?:(?:correct|final)\\s+)?(?:answer|option)\\s*(?:is\\s*[:：]?|[:：])\\s*|(?:最终)?答案(?:字母)?\\s*(?:为|是|[:：])\\s*|选项\\s*)'
+    explicit = bool(re.match(prefix, text, re.I))
+    text = re.sub(prefix, '', text, flags=re.I)
     text = _choice_display_text(text)
     standalone = re.match('^\\(([A-Z])\\)\\s*[.。](?:\\s|$)', text, re.I)
     if standalone:
@@ -715,6 +717,8 @@ def choice_answer_value(value: Any, problem: str='') -> str | None:
         return matches[0] if len(matches) == 1 else None
     labels = choice_set_value(text)
     available = set(options) if options else _choice_problem_labels(problem)
+    if labels is None and re.fullmatch('\\(?[A-Z]\\)?(?:\\s*(?:or|and|/|或|和)\\s*\\(?[A-Z]\\)?)+', text, re.I):
+        labels = frozenset(re.findall('\\b[A-Z]\\b', text.upper())) - {'OR', 'AND'}
     if labels is not None and labels.issubset(available):
         return ','.join(sorted(labels))
     labelled = re.fullmatch('\\(?([A-Z])(?:\\)|[.、:：])\\s*(.+)', text, re.I)
@@ -723,6 +727,11 @@ def choice_answer_value(value: Any, problem: str='') -> str | None:
         label = label.upper()
         if _choice_content_text(body) == (options or {}).get(label):
             return label
+        if choice_value(body) == label:
+            return label
+        if (explicit or allow_explanation) and label in available:
+            if not re.match('\\s*(?:or|and|或者|或|和)\\s*\\(?[A-Z]\\b', body, re.I):
+                return label
         return None
     annotated = re.fullmatch('([A-Z])\\s*[（(]([^A-Za-z]*?)[）)]', text)
     if annotated:
@@ -730,7 +739,8 @@ def choice_answer_value(value: Any, problem: str='') -> str | None:
     return None
 
 def _choice_display_text(value: str) -> str:
-    text = _unwrap_complete_latex_reference(_strip_answer_formatting(value))
+    text = re.sub('^\\s*>+\\s*', '', value)
+    text = _unwrap_complete_latex_reference(_strip_answer_formatting(text))
     for command in ('text', 'mbox', 'mathrm'):
         for start, end, body in reversed(_latex_command_value_matches(text, command)):
             text = text[:start] + body + text[end:]
@@ -997,7 +1007,10 @@ def compare_answers(candidate: Any, references: Sequence[Any], *, answer_type: s
 def typed_declared_answer(response: str, *, answer_type: str, allow_hash_answer: bool=False, problem: str='', reference_unit: str='') -> dict[str, Any] | None:
     mode = answer_type.strip().lower()
     terminal = terminal_choice_answer(response, problem) if mode in {'choice', 'exact_choice'} else None
-    declarations = [terminal] if terminal else _answer_declarations(response, allow_hash_answer)
+    declarations = _answer_declarations(response, allow_hash_answer)
+    if terminal and (not any((d['start'] <= terminal['start'] and terminal['end'] <= d['end'] for d in declarations))):
+        declarations.append(terminal)
+        declarations.sort(key=lambda d: d['start'])
     declared = dict(declarations[-1], confidence='high') if declarations else extract_declared_answer(response, allow_hash_answer=allow_hash_answer)
     if declared is None and mode in {'choice', 'exact_choice'}:
         lines = [(m.start(), m.end(), m.group().strip()) for m in re.finditer('[^\\n]+', response) if m.group().strip()]
@@ -1028,7 +1041,7 @@ def typed_declared_answer(response: str, *, answer_type: str, allow_hash_answer:
         return None
     raw_candidate = candidate
     if mode in {'choice', 'exact_choice'}:
-        candidate = choice_answer_value(candidate, problem) or candidate
+        candidate = choice_answer_value(candidate, problem, allow_explanation=declared['method'] == 'last_final_answer_marker') or candidate
     if mode in {'auto', 'numeric', 'integer', 'fraction', 'decimal'}:
         candidate = problem_numeric_answer(candidate, 'in ' + reference_unit if reference_unit else problem, response)
     normalizer = drop_normalize_answer if mode in {'drop_exact', 'drop_official'} else normalize_answer_text
@@ -1066,7 +1079,7 @@ def typed_declared_answer(response: str, *, answer_type: str, allow_hash_answer:
         if not value.strip('$*_` :：') or all((unicodedata.category(c)[0] in {'P', 'Z'} for c in value)):
             continue
         if mode in {'choice', 'exact_choice'}:
-            label = choice_answer_value(value, problem)
+            label = choice_answer_value(value, problem, allow_explanation=item['method'] == 'last_final_answer_marker')
             if label is None and item != declarations[-1]:
                 if not re.match('^\\(?[A-Z](?:\\)|[.、:：]|$)', value):
                     continue

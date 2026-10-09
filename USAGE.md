@@ -101,7 +101,7 @@ The memory panel contains only the four tasks in Section 9 of the technical repo
 
 ### Scoring
 
-All 29 text sources use the v41 answer-verification implementation in `runtime/evaluation/` and `runtime/scoring/`. Final-answer extraction is independent of the reference answer; it recognizes explicit terminal choices and equivalent numeric forms while retaining ambiguity checks. Each benchmark keeps its scoring metric and full questions × K denominator. `RESULTS.json` records `cpu_verifier_revision`.
+All 29 text sources use the v43 answer-verification implementation in `runtime/evaluation/` and `runtime/scoring/`. Final-answer extraction is independent of the reference answer; it recognizes explicit terminal choices and equivalent numeric forms while retaining ambiguity checks. Each benchmark keeps its scoring metric and full questions × K denominator. `RESULTS.json` records `cpu_verifier_revision`.
 
 | Sources | Rule |
 |---|---|

@@ -97,12 +97,11 @@ def standard_verifier_record(row: Mapping[str, Any], response: str, *, accept_un
         record.update(task_type=mode, verifier_mode=mode, verifier_payload=metadata)
     else:
         raise ValueError(f'unsupported fixed evaluation source: {source}')
-    if source == 'BBH128' and metadata.get('task') == 'word_sorting':
-        record['ordered_words'] = True
-        record['accept_unmarked_final'] = accept_unmarked_final
-        routing['resolution'] = 'bbh_ordered_words'
-    elif accept_unmarked_final and source == 'BBH128':
-        record['accept_unmarked_final'] = True
+    if source == 'BBH128':
+        record['accept_unmarked_final'] = accept_unmarked_final or '</think>' in response
+        if metadata.get('task') == 'word_sorting':
+            record['ordered_words'] = True
+            routing['resolution'] = 'bbh_ordered_words'
     return (record, routing)
 
 def code_payload(source: str, metadata: Mapping[str, Any], code: str) -> tuple[str, str]:

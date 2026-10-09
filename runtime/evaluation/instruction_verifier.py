@@ -69,6 +69,8 @@ def _load_evaluation_lib(mode: str, repo: Path) -> Any:
         value = str(path)
         if value not in sys.path:
             sys.path.insert(0, value)
+    from langdetect import DetectorFactory
+    DetectorFactory.seed = 0
     package_name = f'_yanchor_{mode}_official'
     package = types.ModuleType(package_name)
     package.__path__ = [str(module_path.parent)]
@@ -157,7 +159,7 @@ def verify(request: Mapping[str, Any], args: argparse.Namespace) -> dict[str, An
         followed[index] = literal_result
         literal_overrides.append(index)
     passed = all(followed)
-    return {'verdict': 'PASS' if passed else 'FAIL', 'details': {'method': f'{mode}_official_strict_with_literal_letter_frequency' if literal_overrides else f'{mode}_official_strict_prompt_level', 'instruction_id_list': list(instruction_ids), 'follow_instruction_list': followed, 'follow_all_instructions': passed, 'literal_letter_frequency_indices': literal_overrides}}
+    return {'verdict': 'PASS' if passed else 'FAIL', 'details': {'method': f'{mode}_official_strict_with_literal_letter_frequency' if literal_overrides else f'{mode}_official_strict_prompt_level', 'instruction_id_list': list(instruction_ids), 'follow_instruction_list': followed, 'follow_all_instructions': passed, 'literal_letter_frequency_indices': literal_overrides, 'language_detection_seed': 0}}
 
 def main() -> int:
     result_stream = os.fdopen(os.dup(sys.stdout.fileno()), 'w', buffering=1)

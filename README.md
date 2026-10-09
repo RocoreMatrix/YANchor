@@ -15,7 +15,7 @@
 
 YANchor-4B is a general-purpose recurrent model that preserves crucial memory as ANchors for retrieval during subsequent reasoning. Its multidimensional memory mechanism enables effective long-horizon reasoning with O(N) generation time and O(1) history-state memory.
 
-For example, on challenging math problems, YANchor achieves 82.9% mean pass@1 on AIME 2024–2026 and 63.8% on HMMT, substantially outperforming linear-time, constant-state counterparts, including 7B–14B models.
+For example, on challenging math problems, YANchor achieves 82.9% mean pass@1 on AIME 2024–2026 and 63.6% on HMMT, substantially outperforming linear-time, constant-state counterparts, including 7B–14B models.
 
 YANchor delivers several-fold higher batched long-generation throughput than Transformer and hybrid baselines on H100. Evaluations across dozens of benchmarks demonstrate its superiority in general-purpose capabilities.
 
@@ -31,48 +31,50 @@ Throughput uses repeated prompts and 32K outputs. Solid memory curves use measur
 
 ## Evaluation
 
-Evaluation covers the complete designated splits of 27 common text benchmarks and six VL benchmarks. YANchor reports mean pass@1 for correctness-based tasks; Evaluation Settings defines the metrics. Bold marks row-best scores, including ties.
+Evaluation covers the complete designated splits of 29 common text benchmarks and six VL benchmarks. YANchor reports mean pass@1 for correctness-based tasks; Evaluation Settings defines the metrics. Bold marks row-best scores, including ties.
 
 ### Linear-time, constant-state models
 
-YANchor leads all 16 evaluated linear-time, constant-state baselines on 23 of the 27 common benchmarks. Its 27-benchmark mean is **77.7**, exceeding the strongest baseline, AHN-GDN Qwen2.5 14B at 57.0, by **20.7 points**. On AIME and HMMT, YANchor scores 82.9 and 63.8, compared with 18.8 and 12.2 for RWKV-7 G1j 13.3B. The lead spans 7B–14B counterparts and extends to knowledge, code, and instruction following.
+YANchor leads all 16 evaluated linear-time, constant-state baselines on 24 of the 29 common benchmarks. Its 29-benchmark mean is **77.2**, exceeding the strongest baseline, AHN-GDN Qwen2.5 14B at 53.4, by **23.8 points**. On AIME and HMMT, YANchor scores 82.9 and 63.6, compared with 18.8 and 12.1 for RWKV-7 G1j 13.3B. The lead spans 7B–14B counterparts and extends to knowledge, code, and instruction following.
 
 | Benchmark | YANchor-4B | ARWKV-R1 7B [[2]](#ref-2) | Falcon3-Mamba 7B Instruct [[4]](#ref-4) | QRWKV7 7B Instruct [[5]](#ref-5) | xLSTM 7B [[6]](#ref-6) | Recurrent Gemma 9B IT [[8]](#ref-8) | RWKV-7 G1j 13.3B [[7]](#ref-7) | AHN-GDN Qwen2.5 14B [[3]](#ref-3) | Phi-3 Medium 4K Instruct W2047 [[9]](#ref-9) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | **Mathematics** |  |  |  |  |  |  |  |  |  |
-| AIME 2024 [[12]](#ref-12) | **86.6** | 0.0 | 1.7 | 0.1 | 0.1 | 0.3 | 17.5 | 13.7 | 3.4 |
-| AIME 2025 [[12]](#ref-12) | **77.4** | 0.0 | 0.7 | 0.0 | 0.0 | 0.6 | 27.8 | 10.2 | 3.4 |
-| AIME 2026 [[12]](#ref-12) | **84.7** | 0.4 | 0.8 | 0.0 | 0.1 | 0.1 | 11.1 | 10.3 | 0.0 |
-| HMMT Feb 2026 [[13]](#ref-13) | **63.8** | 0.7 | 2.2 | 0.0 | 1.8 | 1.9 | 12.2 | 4.9 | 3.0 |
-| MATH-500 [[11]](#ref-11) | **97.6** | 30.9 | 41.1 | 40.9 | 24.8 | 22.6 | 77.0 | 79.9 | 48.9 |
-| GSM8K [[10]](#ref-10) | **94.6** | 44.4 | 60.8 | 64.9 | 41.5 | 51.8 | 94.3 | 93.1 | 84.7 |
+| AIME 2024 [[12]](#ref-12) | **86.7** | 0.0 | 1.7 | 0.0 | 0.0 | 0.4 | 17.5 | 13.8 | 3.3 |
+| AIME 2025 [[12]](#ref-12) | **77.4** | 0.0 | 0.8 | 0.0 | 0.0 | 0.8 | 27.5 | 10.0 | 3.3 |
+| AIME 2026 [[12]](#ref-12) | **84.6** | 0.4 | 1.2 | 0.0 | 0.0 | 0.0 | 11.2 | 10.4 | 0.0 |
+| HMMT Feb 2025 [[13]](#ref-13) | **71.8** | 0.8 | 0.8 | 0.0 | 1.7 | 1.2 | 3.3 | 7.5 | 6.7 |
+| HMMT Nov 2025 [[13]](#ref-13) | **69.8** | 1.7 | 5.4 | 6.7 | 5.0 | 5.4 | 5.8 | 10.0 | 2.5 |
+| HMMT Feb 2026 [[13]](#ref-13) | **63.6** | 1.1 | 2.7 | 0.0 | 1.5 | 1.9 | 12.1 | 4.9 | 3.0 |
+| MATH-500 [[11]](#ref-11) | **97.5** | 33.2 | 41.8 | 41.0 | 25.0 | 22.8 | 77.2 | 80.0 | 49.0 |
+| GSM8K [[10]](#ref-10) | 94.5 | 51.2 | 61.4 | 65.5 | 43.4 | 51.7 | **94.6** | 93.6 | 85.3 |
 | **Knowledge** |  |  |  |  |  |  |  |  |  |
-| MMLU [[14]](#ref-14) | **87.8** | 36.1 | 61.6 | 66.1 | 23.5 | 56.2 | 76.8 | 77.3 | 76.0 |
-| MMLU-Pro [[15]](#ref-15) | **79.6** | 13.4 | 31.7 | 27.6 | 21.1 | 19.8 | 60.4 | 64.7 | 58.9 |
-| MMLU-Redux [[16]](#ref-16) | **92.0** | 36.7 | 64.4 | 35.4 | 38.9 | 54.8 | 79.7 | 83.5 | 81.6 |
-| CMMLU [[17]](#ref-17) | 72.5 | 29.5 | 35.2 | 58.0 | 19.3 | 40.3 | 66.1 | **76.0** | 53.5 |
-| C-Eval [[18]](#ref-18) | 74.5 | 28.6 | 38.8 | 57.2 | 19.1 | 40.8 | 66.6 | **76.3** | 50.8 |
+| MMLU [[14]](#ref-14) | **88.2** | 32.3 | 57.7 | 64.6 | 19.6 | 55.5 | 76.7 | 77.2 | 76.3 |
+| MMLU-Pro [[15]](#ref-15) | **79.8** | 8.8 | 26.1 | 23.0 | 4.6 | 13.4 | 47.6 | 63.5 | 54.0 |
+| MMLU-Redux [[16]](#ref-16) | **92.0** | 35.2 | 64.8 | 34.1 | 37.9 | 55.0 | 81.8 | 83.5 | 81.4 |
+| CMMLU [[17]](#ref-17) | 73.3 | 29.0 | 33.4 | 57.7 | 16.9 | 43.4 | 67.4 | **75.0** | 53.3 |
+| C-Eval [[18]](#ref-18) | **74.6** | 29.0 | 35.2 | 56.0 | 19.5 | 41.7 | 66.3 | 74.2 | 51.3 |
 | **Science** |  |  |  |  |  |  |  |  |  |
-| GPQA-Diamond [[19]](#ref-19) | **64.7** | 13.6 | 24.2 | 10.6 | 12.7 | 25.0 | 42.4 | 40.8 | 29.8 |
-| SuperGPQA [[20]](#ref-20) | **61.6** | 9.9 | 12.4 | 16.8 | 6.0 | 19.3 | 35.5 | 36.4 | 25.2 |
-| ARC-C [[23]](#ref-23) | **95.3** | 50.4 | 76.6 | 86.2 | 27.3 | 73.3 | 91.7 | 91.1 | 90.1 |
-| ARC-E [[23]](#ref-23) | **98.1** | 58.0 | 86.9 | 96.1 | 28.8 | 87.4 | 96.6 | 95.3 | 95.5 |
+| GPQA-Diamond [[19]](#ref-19) | **64.6** | 13.1 | 20.7 | 8.6 | 12.1 | 24.7 | 42.4 | 40.9 | 26.8 |
+| SuperGPQA [[20]](#ref-20) | **60.0** | 8.8 | 12.2 | 15.4 | 5.3 | 19.5 | 31.8 | 35.5 | 25.6 |
+| ARC-C [[23]](#ref-23) | **95.5** | 47.4 | 74.8 | 86.3 | 25.1 | 73.3 | 91.8 | 91.5 | 89.8 |
+| ARC-E [[23]](#ref-23) | **98.0** | 56.8 | 87.6 | 95.4 | 28.2 | 87.2 | 96.3 | 94.0 | 95.3 |
 | **Commonsense and reasoning** |  |  |  |  |  |  |  |  |  |
-| WinoGrande [[21]](#ref-21) | 78.0 | 36.5 | 59.8 | 61.7 | 25.7 | 56.2 | 72.6 | 77.2 | **80.6** |
-| HellaSwag [[22]](#ref-22) | 64.5 | 12.9 | 41.0 | 45.1 | 9.4 | 44.8 | **76.4** | 70.0 | 76.1 |
-| BBH [[24]](#ref-24) | **85.9** | 11.8 | 31.4 | 37.3 | 10.8 | 35.4 | 48.8 | 53.5 | 51.8 |
-| BBEH [[25]](#ref-25) | **29.2** | 2.0 | 3.5 | 1.9 | 3.4 | 2.3 | 7.7 | 4.5 | 2.5 |
-| DROP F1 [[31]](#ref-31) | **77.3** | 10.4 | 19.8 | 21.0 | 30.5 | 38.4 | 54.4 | 65.4 | 50.3 |
-| MuSR [[32]](#ref-32) | **60.4** | 10.9 | 23.3 | 1.8 | 10.9 | 35.0 | 51.5 | 56.2 | 50.6 |
-| LogiQA2 [[33]](#ref-33) | **72.2** | 21.1 | 40.2 | 26.2 | 18.1 | 40.5 | 66.7 | 70.6 | 61.4 |
+| WinoGrande [[21]](#ref-21) | 77.9 | 34.4 | 57.5 | 61.8 | 28.3 | 56.4 | 72.1 | 74.0 | **79.6** |
+| HellaSwag [[22]](#ref-22) | 64.9 | 10.0 | 38.6 | 48.0 | 7.9 | 45.8 | **77.4** | 67.9 | 74.0 |
+| BBH [[24]](#ref-24) | **85.4** | 16.6 | 32.8 | 37.4 | 12.8 | 35.5 | 48.7 | 52.0 | 53.3 |
+| BBEH [[25]](#ref-25) | **28.9** | 2.4 | 3.4 | 1.9 | 3.3 | 3.2 | 7.7 | 5.3 | 3.1 |
+| DROP F1 [[31]](#ref-31) | **77.2** | 11.1 | 19.9 | 21.2 | 29.0 | 37.1 | 51.5 | 66.5 | 51.5 |
+| MuSR [[32]](#ref-32) | **60.4** | 15.4 | 29.1 | 2.6 | 19.3 | 35.2 | 51.4 | 56.4 | 51.1 |
+| LogiQA2 [[33]](#ref-33) | 72.2 | 26.8 | 41.4 | 33.2 | 20.0 | 40.2 | 66.6 | **72.3** | 62.7 |
 | **Code** |  |  |  |  |  |  |  |  |  |
-| HumanEval [[26]](#ref-26) | **96.9** | 16.4 | 34.0 | 61.5 | 36.4 | 37.0 | 86.1 | 75.5 | 73.9 |
-| MBPP [[27]](#ref-27) | **87.8** | 21.4 | 39.2 | 30.1 | 9.3 | 19.1 | 67.4 | 68.8 | 59.4 |
-| LiveCodeBench v6 [[28]](#ref-28) | **61.6** | 2.7 | 9.4 | 12.6 | 2.2 | 8.2 | 31.0 | 33.3 | 19.7 |
+| HumanEval [[26]](#ref-26) | **96.7** | 16.5 | 34.1 | 62.2 | 36.6 | 37.2 | 86.0 | 75.6 | 73.8 |
+| MBPP [[27]](#ref-27) | **87.8** | 21.2 | 39.2 | 30.2 | 9.2 | 19.0 | 67.4 | 68.6 | 59.4 |
+| LiveCodeBench v6 [[28]](#ref-28) | **61.6** | 2.6 | 9.3 | 12.4 | 2.2 | 7.9 | 30.7 | 32.9 | 19.1 |
 | **Instruction following** |  |  |  |  |  |  |  |  |  |
-| IFEval [[29]](#ref-29) | **87.9** | 10.4 | 64.9 | 59.0 | 35.6 | 39.5 | 77.7 | 77.4 | 61.6 |
-| IFBench [[30]](#ref-30) | **65.2** | 8.1 | 18.6 | 21.2 | 14.6 | 12.6 | 27.3 | 33.5 | 21.9 |
-| **27-benchmark mean** | **77.7** | 19.2 | 34.2 | 34.8 | 17.5 | 32.0 | 56.4 | 57.0 | 48.7 |
+| IFEval [[29]](#ref-29) | **88.0** | 10.4 | 64.7 | 59.0 | 34.0 | 39.7 | 77.8 | 77.4 | 61.4 |
+| IFBench [[30]](#ref-30) | **65.3** | 8.3 | 18.7 | 21.3 | 14.7 | 12.7 | 27.3 | 33.3 | 22.0 |
+| **29-benchmark mean** | **77.2** | 18.1 | 31.6 | 32.6 | 16.0 | 29.9 | 52.3 | 53.4 | 45.4 |
 
 ## Model
 
@@ -141,43 +143,45 @@ Disabling memory reduces query accuracy to 0.4%. Paired evidence-change tests fu
 
 These models provide cross-architecture references with context-dependent history storage. Qwen3.5-4B combines Gated DeltaNet with global attention and serves as the backbone reference for YANchor’s conversion to bounded-state inference.
 
-YANchor surpasses MiniCPM4.1-8B, Gemma4-E4B, Phi-4-mini-reasoning, and Nemotron-3-Nano-4B on all three AIME editions while using constant history-state memory. Compared with Qwen3.5-4B, YANchor scores higher on MMLU, MMLU-Pro, MMLU-Redux, SuperGPQA, HumanEval, MBPP, IFBench, and DROP. YANchor retains 96.4% of Qwen’s three-year AIME mean and delivers 4.12–6.58 times its measured end-to-end throughput in batched long generation.
+YANchor surpasses MiniCPM4.1-8B, Gemma4-E4B, Phi-4-mini-reasoning, and Nemotron-3-Nano-4B on all three AIME editions while using constant history-state memory. Compared with Qwen3.5-4B, YANchor scores higher on MMLU, MMLU-Pro, MMLU-Redux, SuperGPQA, HumanEval, MBPP, IFBench, and DROP. YANchor retains 96.3% of Qwen’s three-year AIME mean and delivers 4.12–6.58 times its measured end-to-end throughput in batched long generation.
 
 | Benchmark | YANchor-4B | Qwen3.5-4B Backbone [[1]](#ref-1) | Granite4.2 3B [[41]](#ref-41) | Phi-4-mini-reasoning [[42]](#ref-42) | Gemma4 E4B-it [[40]](#ref-40) | Nemotron-3 Nano-4B [[43]](#ref-43) | MiniCPM4.1 8B [[39]](#ref-39) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | **Mathematics** |  |  |  |  |  |  |  |
-| AIME 2024 [[12]](#ref-12) | 86.6 | **89.6** | 84.9 | 44.7 | 41.2 | 60.9 | 77.1 |
-| AIME 2025 [[12]](#ref-12) | 77.4 | **80.8** | 78.7 | 30.8 | 39.6 | 56.6 | 69.9 |
-| AIME 2026 [[12]](#ref-12) | 84.7 | **87.7** | 82.9 | 35.0 | 38.2 | 53.8 | 70.9 |
-| HMMT Feb 2026 [[13]](#ref-13) | 63.8 | **66.0** | 58.7 | 26.1 | 28.0 | 36.4 | 49.9 |
-| MATH-500 [[11]](#ref-11) | 97.6 | **98.0** | 97.8 | 91.3 | 87.5 | 94.8 | 96.5 |
-| GSM8K [[10]](#ref-10) | 94.6 | **94.7** | 93.5 | 92.3 | 90.3 | 91.8 | 93.4 |
+| AIME 2024 [[12]](#ref-12) | 86.7 | **89.6** | 85.0 | 45.4 | 42.1 | 60.8 | 77.1 |
+| AIME 2025 [[12]](#ref-12) | 77.4 | **80.8** | 78.8 | 32.5 | 40.0 | 56.7 | 70.0 |
+| AIME 2026 [[12]](#ref-12) | 84.6 | **87.9** | 82.9 | 38.8 | 38.3 | 53.8 | 70.8 |
+| HMMT Feb 2025 [[13]](#ref-13) | 71.8 | 74.6 | **75.8** | 25.0 | 25.4 | 40.0 | 58.3 |
+| HMMT Nov 2025 [[13]](#ref-13) | 69.8 | **78.3** | 72.5 | 28.7 | 32.9 | 47.1 | 59.6 |
+| HMMT Feb 2026 [[13]](#ref-13) | 63.6 | **65.9** | 59.5 | 24.6 | 28.8 | 36.4 | 49.2 |
+| MATH-500 [[11]](#ref-11) | 97.5 | **98.0** | 97.8 | 91.6 | 88.2 | 94.8 | 96.4 |
+| GSM8K [[10]](#ref-10) | 94.5 | **94.8** | 93.8 | 93.6 | 91.3 | 92.4 | 93.6 |
 | **Knowledge** |  |  |  |  |  |  |  |
-| MMLU [[14]](#ref-14) | **87.8** | 85.6 | 77.3 | 78.1 | 75.2 | 77.5 | 82.4 |
-| MMLU-Pro [[15]](#ref-15) | **79.6** | 75.9 | 65.8 | 53.2 | 68.5 | 56.5 | 65.6 |
-| MMLU-Redux [[16]](#ref-16) | **92.0** | 89.3 | 80.8 | 79.8 | 85.8 | 80.8 | 86.8 |
-| CMMLU [[17]](#ref-17) | 72.5 | **82.2** | 58.3 | 44.3 | 61.9 | 53.9 | 80.3 |
-| C-Eval [[18]](#ref-18) | 74.5 | **85.2** | 61.7 | 42.7 | 64.8 | 55.5 | 78.8 |
+| MMLU [[14]](#ref-14) | **88.2** | 85.2 | 77.2 | 77.5 | 81.2 | 75.8 | 82.7 |
+| MMLU-Pro [[15]](#ref-15) | **79.8** | 77.7 | 66.4 | 38.5 | 69.0 | 56.8 | 67.0 |
+| MMLU-Redux [[16]](#ref-16) | **92.0** | 89.8 | 81.6 | 78.3 | 86.4 | 81.5 | 87.8 |
+| CMMLU [[17]](#ref-17) | 73.3 | **83.9** | 59.1 | 45.3 | 68.7 | 54.6 | 80.2 |
+| C-Eval [[18]](#ref-18) | 74.6 | **84.0** | 60.8 | 42.4 | 68.6 | 56.4 | 79.0 |
 | **Science** |  |  |  |  |  |  |  |
-| GPQA-Diamond [[19]](#ref-19) | 64.7 | **77.8** | 58.7 | 48.1 | 40.9 | 43.4 | 50.4 |
-| SuperGPQA [[20]](#ref-20) | **61.6** | 51.4 | 39.7 | 34.7 | 42.5 | 37.6 | 41.8 |
-| ARC-C [[23]](#ref-23) | 95.3 | **96.8** | 92.7 | 91.5 | 92.2 | 91.7 | 92.7 |
-| ARC-E [[23]](#ref-23) | 98.1 | **98.9** | 97.3 | 95.8 | 96.5 | 96.2 | 96.5 |
+| GPQA-Diamond [[19]](#ref-19) | 64.6 | **77.3** | 58.6 | 48.0 | 55.6 | 43.4 | 51.5 |
+| SuperGPQA [[20]](#ref-20) | **60.0** | 52.8 | 39.5 | 32.2 | 41.1 | 37.4 | 40.6 |
+| ARC-C [[23]](#ref-23) | 95.5 | **96.8** | 92.4 | 90.2 | 94.3 | 91.9 | 93.4 |
+| ARC-E [[23]](#ref-23) | 98.0 | **98.4** | 97.1 | 94.4 | 97.7 | 96.7 | 97.4 |
 | **Commonsense and reasoning** |  |  |  |  |  |  |  |
-| WinoGrande [[21]](#ref-21) | 78.0 | **87.1** | 74.6 | 75.9 | 76.3 | 65.4 | 72.8 |
-| HellaSwag [[22]](#ref-22) | 64.5 | **80.1** | 67.7 | 62.7 | 52.3 | 46.6 | 46.6 |
-| BBH [[24]](#ref-24) | 85.9 | 86.0 | 86.2 | 74.9 | 85.2 | 80.2 | **88.1** |
-| BBEH [[25]](#ref-25) | 29.2 | **34.4** | 25.1 | 12.4 | 16.6 | 9.2 | 12.8 |
-| DROP F1 [[31]](#ref-31) | 77.3 | 75.4 | **83.3** | 54.0 | 72.5 | 71.9 | 78.7 |
-| MuSR [[32]](#ref-32) | 60.4 | 64.6 | **64.9** | 52.4 | 62.1 | 58.3 | 64.4 |
-| LogiQA2 [[33]](#ref-33) | 72.2 | **81.2** | 68.6 | 57.8 | 73.5 | 67.2 | 76.9 |
+| WinoGrande [[21]](#ref-21) | 77.9 | **87.1** | 74.0 | 75.8 | 76.5 | 65.6 | 78.2 |
+| HellaSwag [[22]](#ref-22) | 64.9 | **80.6** | 67.4 | 62.6 | 53.5 | 46.3 | 49.8 |
+| BBH [[24]](#ref-24) | 85.4 | 86.2 | 85.5 | 72.5 | 84.1 | 79.3 | **86.6** |
+| BBEH [[25]](#ref-25) | 28.9 | **34.6** | 24.5 | 12.9 | 17.4 | 10.8 | 14.0 |
+| DROP F1 [[31]](#ref-31) | 77.2 | 76.0 | **83.7** | 50.6 | 72.9 | 72.6 | 78.3 |
+| MuSR [[32]](#ref-32) | 60.4 | 64.9 | **65.1** | 56.7 | 62.2 | 58.2 | 64.5 |
+| LogiQA2 [[33]](#ref-33) | 72.2 | **82.2** | 69.5 | 58.5 | 72.6 | 67.9 | 75.7 |
 | **Code** |  |  |  |  |  |  |  |
-| HumanEval [[26]](#ref-26) | 96.9 | 86.1 | 96.9 | 81.5 | 93.9 | 90.9 | **98.2** |
-| MBPP [[27]](#ref-27) | 87.8 | 70.7 | **92.5** | 63.9 | 79.2 | 72.1 | 92.2 |
-| LiveCodeBench v6 [[28]](#ref-28) | 61.6 | 76.2 | **76.3** | 35.7 | 69.6 | 67.3 | 70.8 |
+| HumanEval [[26]](#ref-26) | 96.7 | 86.0 | 97.0 | 79.9 | 93.9 | 90.9 | **98.2** |
+| MBPP [[27]](#ref-27) | 87.8 | 71.0 | **92.6** | 64.0 | 79.2 | 72.2 | 92.2 |
+| LiveCodeBench v6 [[28]](#ref-28) | 61.6 | 75.7 | **75.9** | 35.3 | 69.1 | 66.4 | 70.4 |
 | **Instruction following** |  |  |  |  |  |  |  |
-| IFEval [[29]](#ref-29) | 87.9 | 90.0 | **92.3** | 46.0 | 84.2 | 89.3 | 73.6 |
-| IFBench [[30]](#ref-30) | 65.2 | 60.2 | **74.4** | 14.5 | 34.7 | 57.7 | 23.6 |
+| IFEval [[29]](#ref-29) | 88.0 | 89.6 | **92.2** | 45.7 | 84.3 | 89.5 | 73.4 |
+| IFBench [[30]](#ref-30) | 65.3 | 60.3 | **74.3** | 14.3 | 34.7 | 57.7 | 23.7 |
 
 ## VL comparison
 
@@ -199,7 +203,7 @@ VL scores are answer-level accuracy in percent.
 
 **YANchor mean pass@1.** For text evaluation, YANchor sets the number of independent responses per item, K, by evaluation-set size: K=64 for fewer than 100 questions, K=16 for 100–10,000 questions, and K=1 for more than 10,000 questions. More repetitions on smaller sets reduce variation from stochastic generation. Binary-correctness scores average across responses and then across problems, estimating single-response success. Other metrics retain their benchmark-specific definitions.
 
-**Scoring.** Mathematics uses final-answer correctness. YANchor's code scores count extracted programs that pass the task tests, including code recovered from the end of reasoning. Knowledge and instruction-following tasks use their benchmark-specific aggregation and checkers.
+**Scoring.** All text results use the v43 answer-verification rules. IFEval and IFBench fix the language-detector seed to 0. Mathematics uses final-answer correctness. YANchor's code scores count extracted programs that pass the task tests, including code recovered from the end of reasoning. Knowledge and instruction-following tasks use their benchmark-specific aggregation and checkers.
 
 ### Generation settings
 
@@ -258,7 +262,7 @@ docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
   yanchor-runtime evaluate --suite text --gpus 0 --batch 320 --output outputs/text
 ```
 
-Automatic K uses each bundled source's question count: **K=64** below 100 questions, **K=16** for 100–10,000, and **K=1** above 10,000. The defaults apply the text generation settings above and the **v41** scoring rules. Source scores use all question × K attempts and retain benchmark-specific aggregation.
+Automatic K uses each bundled source's question count: **K=64** below 100 questions, **K=16** for 100–10,000, and **K=1** above 10,000. The defaults apply the text generation settings above and the **v43** scoring rules. Source scores use all question × K attempts and retain benchmark-specific aggregation.
 
 Monitor progress and aggregate decode throughput from another terminal:
 
