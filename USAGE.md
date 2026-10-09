@@ -89,7 +89,7 @@ python -I run.py status --output outputs/text
 
 Use a fresh output directory for each evaluation. The CPU broker distributes attempts among GPU replicas; completed slots are refilled while other answers continue. Workers write response fragments, exit, and then CPU scoring starts. `--generate-only` stops after generation. Existing fragments can be scored with `python -I run.py score --model /weights --output outputs/text`, without GPUs.
 
-`/weights/evaluation_data/MANIFEST.json` lists the designated evaluation splits and their complete question counts. The text evaluation contains **113,743 questions across 29 sources** and expands to **715,267 responses** under automatic K. The report compares 27 common text sources. Auto-K uses the complete source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
+`/weights/evaluation_data/MANIFEST.json` lists the designated evaluation splits and their complete question counts. The text evaluation contains **113,743 questions across 29 sources** and expands to **715,267 responses** under automatic K. The report compares all 29 text sources. Auto-K uses the complete source size: fewer than 100 questions → K64; 100–10,000 → K16; above 10,000 → K1. `--sources AIME2024 DROP` selects sources.
 
 Text generation uses temperature 0.6, top-k 20, top-p 0.95, no presence penalty, seed 20260923 and a 131,072-token output cap. The frozen `prompt_text` is the model input; references and executable tests are consumed only by CPU scorers. Every sampled trajectory contributes to the accuracy denominator. Fixed seeds and large K support statistical reproduction; arithmetic order and batch shapes can change individual trajectories.
 
@@ -101,7 +101,7 @@ The memory panel contains only the four tasks in Section 9 of the technical repo
 
 ### Scoring
 
-All 29 text sources use the v43 answer-verification implementation in `runtime/evaluation/` and `runtime/scoring/`. Final-answer extraction is independent of the reference answer; it recognizes explicit terminal choices and equivalent numeric forms while retaining ambiguity checks. Each benchmark keeps its scoring metric and full questions × K denominator. `RESULTS.json` records `cpu_verifier_revision`.
+All 29 text sources use the v43 answer-verification implementation in `runtime/evaluation/` and `runtime/scoring/`. Final-answer extraction is independent of the reference answer; it recognizes explicit terminal choices and equivalent numeric forms while retaining ambiguity checks. Each benchmark keeps its scoring metric and full questions × K denominator. `RESULTS.json` records `cpu_verifier_revision`. IFEval and IFBench fix the language-detector seed to 0.
 
 | Sources | Rule |
 |---|---|
@@ -125,4 +125,4 @@ Text responses stop at EOS, the token budget or an exact mechanical loop with a 
 
 `STATUS.json` records expected, claimed and completed attempts. During generation, `total_decode_tokens_per_second` sums recent pure-decode rates across active ranks. `rank-*-metrics.json` separates initial prefill, refill prefill, pure decode, useful output tokens and peak GPU memory. Pure-decode rates exclude prefill and the first token of each response.
 
-`GENERATION_COMPLETE.json` records persisted generation counts. `RESULTS.json` contains scores, denominators and sampling settings after scoring. A partial run is marked `INCOMPLETE`. Text diagnostics include protocol pass rate, answer visibility, EOS and cap-hit rates, mechanical loops, length distributions and correct answers per million output tokens.
+`GENERATION_COMPLETE.json` records persisted generation counts. `RESULTS.json` contains scores, denominators and sampling settings after scoring. A partial run is marked `INCOMPLETE`.

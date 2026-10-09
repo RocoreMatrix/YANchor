@@ -7,7 +7,7 @@
     &nbsp; | &nbsp;
     💻 <a href="https://github.com/rockmatrix-ai/YANchor">GitHub</a>
     &nbsp; | &nbsp;
-    🤗 <a href="https://huggingface.co/HuishanJi/YANchor-4B">Hugging Face</a>
+    🤗 <a href="https://huggingface.co/RocoreMatrix/YANchor-4B">Hugging Face</a>
     &nbsp; | &nbsp;
     🤖 <a href="https://modelscope.ai/models/RocoreMatrix/YANchor-4B">ModelScope</a>
   </p>
@@ -80,7 +80,7 @@ YANchor leads all 16 evaluated linear-time, constant-state baselines on 24 of th
 
 | Model | Text parameters | Weights | Model license |
 |---|---:|---|---|
-| YANchor-4B | 4.58B | [Hugging Face](https://huggingface.co/HuishanJi/YANchor-4B) | [YANchor Model License 1.0](MODEL_LICENSE) |
+| YANchor-4B | 4.58B | [Hugging Face](https://huggingface.co/RocoreMatrix/YANchor-4B) | [YANchor Model License 1.0](MODEL_LICENSE) |
 
 ### Architecture
 
@@ -219,11 +219,11 @@ YANchor-4B uses the custom inference runtime provided through **`run.py`**. Use 
 
 ### Download and run
 
-Download the complete [Hugging Face bundle](https://huggingface.co/HuishanJi/YANchor-4B), which includes the model weights, runtime and evaluation data. The bundle is also available on [ModelScope](https://modelscope.ai/models/RocoreMatrix/YANchor-4B).
+Download the complete [Hugging Face bundle](https://huggingface.co/RocoreMatrix/YANchor-4B), which includes the model weights, runtime and evaluation data. The bundle is also available on [ModelScope](https://modelscope.ai/models/RocoreMatrix/YANchor-4B).
 
 ```bash
 python -m pip install -U huggingface_hub
-hf download HuishanJi/YANchor-4B --local-dir YANchor-4B
+hf download RocoreMatrix/YANchor-4B --local-dir YANchor-4B
 cd YANchor-4B
 docker build -t yanchor-runtime .
 docker run --rm --gpus all --ipc=host -v "$PWD:/model" \
